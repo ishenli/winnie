@@ -1,4 +1,4 @@
 winnie
 ======
 
-一个集市型的javascript框架
+一个diy的前端框架 ^_^
