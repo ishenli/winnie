@@ -20,8 +20,36 @@ var T,tangram=T=function(){
         if(chain){return  chain;}
 
         chain=tangram[chainName]=fn||function(object){
-            return
+            return tangram.extend(object,tangram[chainName].fn);
         }
+
+        chain.extend=function(extended){
+            var method;
+            for(method in extended){
+                (function(method){
+                    if(method!="splice"){
+                        chain[method]=function(){
+                            var id=arguments[0];
+
+                            chainName="dom"&&tangram.type(id)=="string"&&(id="#"+id);
+
+                            var object=chain(id);
+                            var result=object[method].apply(object,slice.call(arguments,1));
+                            return tangram.type[result]="$DOM"?result.get(0):result;
+                        }
+
+                    }
+                }(method));
+            }
+
+            return tangram.extend(tangram[chainName].fn,extended);
+        };
+
+        //创建链头对象构造器
+        tangram[chainName][className]=tangram[chainName][className]||function(){};
+        chain.fn=tangram[chainName][className].prototype;
+
+        return chain;
     };
 
     //
