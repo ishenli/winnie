@@ -11,14 +11,12 @@
 
 实例代码
 ```js
-<script>
      seajs.use(["../src/lazyload"],function(Lazyload) {
         var lazyload=new Lazyload({
             //something api
         });
         lazyload.setup();
      });
-<\/script>
 ```
 ## API
 ###element
