@@ -18,7 +18,7 @@
         });
         lazyload.setup();
      });
-</script>
+<\/script>
 ```
 ## API
 ###element
@@ -34,7 +34,7 @@
 进行图片加载的区域,默认为window,支持jquery选择器
 
 ###dataAttribute
-用户存放原始图片的地址，默认src,对应html中data-src属性，，如果设定其他值，可在html中修改成其他值
+用户存放原始图片的地址，默认src,对应html中data-src属性，如果设定其他值，可在html中修改成其他值
 ```html
 <img src="loadding.jpg" data-src="img/example.jpg"/>
 ```
@@ -42,7 +42,7 @@
 图片加载完成后执行的函数
 
 ###threshod
-默认是当图片出现在屏幕区域中进行加载。通过设定threshold的值可使图片提前进行加载,默认为0。
+默认是当图片出现在屏幕区域中进行加载。通过设定threshold的值可使图片提前进行加载，默认为0。
 ```js
 var lazyload=new Lazyload({
     threshold:200
