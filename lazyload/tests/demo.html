@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <title>lazyload demo页面</title>
+    <script src="../../sea-modules/seajs/2.0.0/sea.js" data-config="config" type="text/javascript"></script>
+    <style type="text/css">
+        *{ margin: 0; padding: 0; }
+        img{
+            display: block;
+            width: 145px;
+            height: 95px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+ <h2>图片列表</h2>
+ <img data-src="http://imgstatic.baidu.com/img/image/shouye/erping2-0821.jpg" src="http://imgstatic.baidu.com/img/image/shouye/duanfa0816.jpg">
+ <img data-src="http://imgstatic.baidu.com/img/image/shouye/duanfa0816.jpg" src="http://imgstatic.baidu.com/img/image/shouye/duanfa0816.jpg">
+ <img data-src="http://imgstatic.baidu.com/img/image/shouye/yangmi0816.jpg" src="http://imgstatic.baidu.com/img/image/shouye/duanfa0816.jpg">
+ <img data-src="http://imgstatic.baidu.com/img/image/shouye/liuyan0816.jpg" src="http://imgstatic.baidu.com/img/image/shouye/duanfa0816.jpg">
+ <img data-src="http://imgstatic.baidu.com/img/image/shouye/songqian0816.jpg" src="http://imgstatic.baidu.com/img/image/shouye/duanfa0816.jpg">
+ <img data-src="http://imgstatic.baidu.com/img/image/shouye/xiaoqingxin0816.jpg" src="http://imgstatic.baidu.com/img/image/shouye/duanfa0816.jpg">
+ <img data-src="http://imgstatic.baidu.com/img/image/shouye/feizhuliu0816.jpg" src="http://imgstatic.baidu.com/img/image/shouye/duanfa0816.jpg">
+ <img data-src="http://imgstatic.baidu.com/img/image/shouye/bianjituijian0816.jpg" src="http://imgstatic.baidu.com/img/image/shouye/duanfa0816.jpg">
+ <img data-src="http://imgstatic.baidu.com/img/image/shouye/egao0816.jpg" src="http://imgstatic.baidu.com/img/image/shouye/duanfa0816.jpg">
+ <script>
+     seajs.use(["../src/lazyload"],function(Lazyload) {
+        var lazyload=new Lazyload({
+            element:'img',
+            dataAttribute:"src"
+        });
+        lazyload.setup();
+     });
+ </script>
+</body>
+</html>

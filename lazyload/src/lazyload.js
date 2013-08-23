@@ -4,6 +4,7 @@ define(function(require, exports, module) {
     var $=require("$");
     var $window = $(window);
     var Lazyload=function(options) {
+        var self=this;
         if(!(this instanceof Lazyload)) {
             return new Lazyload(options);
         }
@@ -20,8 +21,6 @@ define(function(require, exports, module) {
             appear:null,
             load:null
         };
-//        options.failureLimit?null:delete options.failureLimit;
-//        options.effectSpeed?null:delete options.effectSpeed;
         if (options) {
             $.extend(settings, options);
         }
@@ -33,11 +32,11 @@ define(function(require, exports, module) {
 
         if(0===settings.event.indexOf("scroll")) {
             $container.on(settings.event,function(e) {
-                return this.update();
+                return self.update();
             })
         }
 
-    }
+    };
 
     Lazyload.prototype.update=function() {
         var counter= 0,settings=this.settings;
@@ -106,9 +105,10 @@ define(function(require, exports, module) {
         //判断当窗口resize
         $window.on("resize",function(e) {
             that.update();
-        })
+        });
 
         $(document).ready(function() {
+//            console.log(Lazyload==that);
             that.update();
         });
     };
@@ -122,7 +122,7 @@ define(function(require, exports, module) {
             fold=$(settings.container).offset().top+$(settings.container).height();
         }
 
-        return fold<=$(element).offset().top-settings.threshod;
+        return fold <= $(element).offset().top-settings.threshod;
     };
 
     $.rightOfFold=function(element,settings){
@@ -133,7 +133,7 @@ define(function(require, exports, module) {
             fold=$(settings.container).offset().left+$(settings.container).width();
         }
 
-        return fold<=$(element).offset().left-settings.threshod;
+        return fold <= $(element).offset().left-settings.threshod;
     };
 
     $.aboveTop=function(element,settings){
@@ -143,7 +143,7 @@ define(function(require, exports, module) {
             fold=$(settings.container).offset().top;
         }
 
-        return fold<=$(element).offset().top+settings.threshod+$(element).height();
+        return fold >= $(element).offset().top+settings.threshod+$(element).height();
     };
 
     $.leftOfBegin=function(element,settings){
@@ -152,8 +152,7 @@ define(function(require, exports, module) {
         }else{
             fold=$(settings.container).offset().left;
         }
-
-        return fold<=$(element).offset().left+settings.threshod+$(element).width();
+        return fold >= $(element).offset().left+settings.threshod+$(element).width();
     };
 
     $.inviewport = function(element, settings) {
