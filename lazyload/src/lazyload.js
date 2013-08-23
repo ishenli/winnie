@@ -77,7 +77,7 @@ define(function(require, exports, module) {
                 }
 
                 $("<img/>").on("load",function() {
-                    $self.hide().attr("src",$self.data(settings.dataAttribute));
+                    $self.hide().attr("src",$self.data(settings.dataAttribute))[that.settings.effect]();
                     $self.loaded=true;
 
                     var temp= $.grep(that.elements,function(element) {
