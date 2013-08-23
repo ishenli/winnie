@@ -7,7 +7,7 @@ winnie
 
 1.seajs--模块加载器
 
-2.jquery--DOM操作
+2.jquery--Dom操作
 
-3.arale--arale框架
+3.arale--支付宝Arale框架
 
