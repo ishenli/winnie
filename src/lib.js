@@ -1,6 +1,6 @@
 /**
  * User: shenli
- * base util
+ * base lib
  */
 define(function (require, exports, module) {
     /**
@@ -245,5 +245,43 @@ define(function (require, exports, module) {
             return fn.apply(this, args.concat(slice(arguments)));
         };
     };
+
+    /**
+     * 为对象绑定方法和作用域
+     *
+     * @method module:lib.fn.bind
+     * @param {Function} fn 要绑定的函数
+     * @param {Object} scope 执行运行时this，如果不传入则运行时this为函数本身
+     * @param {...args=} args 函数执行时附加到执行时函数前面的参数
+     *
+     * @return {Function} 封装后的函数
+     */
+    lib.bind = lib.fn.bind = fallback(
+        Function.bind,
+        function (fn, scope) {
+            var args = arguments.length > 2 ? slice(arguments, 1) : null,
+                F = function(){};
+
+            var bound = function(){
+                var context = scope, length = arguments.length;
+
+                // 处理构造函数的 bind
+                if (this instanceof bound){
+                    F.prototype = fn.prototype;
+                    context = new F();
+                }
+                var result = (!args && !length)
+                    ? fn.call(context)
+                    : fn.apply(
+                    context,
+                    args && length
+                        ? args.concat(slice(arguments))
+                        : args || arguments
+                );
+                return context === scope ? result : context;
+            };
+            return bound;
+        }
+    );
     module.exports=lib;
 });
