@@ -1,0 +1,26 @@
+{
+    "name": "winne",
+    "version": "0.0.1",
+    "license": "MIT",
+    "private": true,
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ],
+    "dependencies": {
+        "lacus":"https://github.com/ishenli/lacus.git",
+        "esl":"https://github.com/ecomfe/esl.git",
+        "html5shiv": "*",
+        "handlebars": "~1.0.0",
+        "async":"*",
+        "moye": "https://github.com/ecomfe/moye/archive/master.zip"
+    },
+    "devDependencies": {
+        "jasmine-jquery": "~1.7.0",
+        "underscore": "~1.6.0",
+        "jquery-mockjax": "~1.5.3"
+    }
+}
