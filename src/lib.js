@@ -1,5 +1,5 @@
 /**
- * @file file
+ * @file lib
  * @author shenli
  */
 define(function (require) {

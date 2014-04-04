@@ -7,7 +7,7 @@ module.exports = function (grunt) {
 
     return {
         dev: ['clean', 'copy'],
-        pub: ['requirejs:validator'],
+        pub: ['requirejs:lib'],
 
         ext: {
             'karma.<%=name%>': {
@@ -32,17 +32,17 @@ module.exports = function (grunt) {
                     ]
                 }
             },
-            'requirejs.validator': {
+            'requirejs.lib': {
                 options: {
                     baseUrl: "<%=src%>/../",
-                    name: "Validator",
+                    name: "lib",
                     paths: {
                         underscore:'empty:'
                     },
 
                     // optimize: 'none',
                     findNestedDepandencies: true,
-                    out: "asset/Validator.js",
+                    out: "asset/lib.js",
                     preserveLicenseComments: false
                 }
             }
@@ -67,7 +67,21 @@ module.exports = function (grunt) {
                 {
                     expand: true,
                     cwd: '<%=src%>',
-                    src: ['../Validator.js'],
+                    src: ['../lib.js'],
+                    dest: '<%=asset%>',
+                    filter: 'isFile'
+                },
+                {
+                    expand: true,
+                    cwd: '<%=src%>',
+                    src: ['../Widget.js'],
+                    dest: '<%=asset%>',
+                    filter: 'isFile'
+                },
+                {
+                    expand: true,
+                    cwd: '<%=src%>',
+                    src: ['../Control.js'],
                     dest: '<%=asset%>',
                     filter: 'isFile'
                 }
