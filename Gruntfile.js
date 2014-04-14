@@ -31,7 +31,11 @@ module.exports = function(grunt) {
         },
         jshint: {
             options: grunt.file.readJSON('.jshintrc'),
-            all: ['<%=meta.src%>/**/*.js', '<%=meta.test%>/**/*Spec.js']
+            all: [
+                '<%=meta.src%>/**/*.js',
+                '<%=meta.src%>/*.js'
+//                '<%=meta.test%>/**/*Spec.js'
+            ]
         },
 
         csslint: {

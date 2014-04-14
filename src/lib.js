@@ -13,6 +13,9 @@ define(function (require) {
         require('./lib/dom'),
         require('./lib/attribute'),
         require('./lib/event'),
+        require('./lib/string'),
+        require('./lib/style'),
+        require('./lib/page'),
         require('./lib/lang')
     );
 

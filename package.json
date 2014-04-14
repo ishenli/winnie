@@ -1,23 +1,29 @@
 {
-  "name": "winne",
-  "version": "0.0.1",
-  "description": "a sample ui library",
-  "main": "index.js",
-  "scripts": {
-    "test": "node test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ishenli/winnie.git"
-  },
-  "keywords": [
-    "javascript"
-  ],
-  "author": "ishenli",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/ishenli/winnie/issues"
-  },
+    "name": "winne",
+    "version": "0.0.1",
+    "description": "a sample ui library",
+    "main": "index.js",
+    "scripts": {
+        "test": "node test"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ishenli/winnie.git"
+    },
+    "keywords": [
+        "javascript"
+    ],
+    "author": "ishenli",
+    "contributors": [
+        {
+            "name": "shenli",
+            "email": "meshenli@gmail.com"
+        }
+    ],
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/ishenli/winnie/issues"
+    },
     "devDependencies": {
         "grunt": "~0.4.0",
         "grunt-lesslint": "~0.15.0",

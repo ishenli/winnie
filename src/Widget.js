@@ -1,5 +1,5 @@
 /**
- * @file file
+ * @file ui控件基础，封装基本的方法和属性
  * @author shenli
  */
 define(function (require) {
@@ -153,11 +153,13 @@ define(function (require) {
 
            Widget.superClass.initialize.call(this, config);
 
-            if(!config.element){
-                throw  new Error('no element is passed');
-            }
+            config = config || {};
 
-            this.element = lib.g(config.element);
+            /*if(!config.element){
+                throw  new Error('no element is passed');
+            }*/
+
+            config.element && (this.element = lib.g(config.element));
 
             this.init && this.init();
         }

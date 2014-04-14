@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mask test</title>
+    <link rel="stylesheet" href="../../dep/lacus/asset/all/all.css"/>
+    <style type="text/css">
+        #box{
+            position: relative;
+            left: 100px;
+            top: 100px;
+            width: 500px;;
+        }
+    </style>
+</head>
+<body>
+    <div class="ui-box" id="box" >
+        <div class="ui-box-head">
+            <h3 class="ui-box-title">Mask test</h3>
+        </div>
+        <div class="ui-box-container ui-box-content">
+            <div class="ui-btn uib-btn-blue" id="createMask">show mask</div>
+        </div>
+    </div>
+    <script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/1-6-10/esl.js"></script>
+    <script>
+        require.config({
+            baseUrl: '../../src',
+            paths: {
+                winne:'winne/asset',
+                underscore:'../dep/underscore/underscore'
+            }
+        });
+
+        require(['Mask','lib'], function (Mask,lib) {
+
+            lib.on(lib.g('createMask'),'click',function(e) {
+
+                Mask.set('opacity',0.9).show();
+
+
+            });
+
+        });
+    </script>
+
+</body>
+</html>

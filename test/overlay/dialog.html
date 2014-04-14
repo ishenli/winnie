@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dialog test</title>
+    <link rel="stylesheet" href="../../dep/lacus/asset/all/all.css"/>
+    <style type="text/css">
+        #box{
+            position: relative;
+            left: 100px;
+            top: 100px;
+            width: 500px;;
+        }
+    </style>
+</head>
+<body>
+    <div class="ui-box" id="box" >
+        <div class="ui-box-head">
+            <h3 class="ui-box-title">Dialog test</h3>
+        </div>
+        <div class="ui-box-container ui-box-content">
+            <div class="ui-btn uib-btn-blue j-dialog-show" id="createDialog">show dialog</div>
+        </div>
+    </div>
+    <div class="ui-dialog fn-hide" id="j-dialog">
+        <a href="javascript:;" class="ui-dialog-close j-dialog-close" >x</a>
+        <div class="ui-dialog-content" data-role="content">
+            a text content
+        </div>
+    </div>
+    <script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/1-6-10/esl.js"></script>
+    <script>
+        require.config({
+            baseUrl: '../../src',
+            paths: {
+                winne:'winne/asset',
+                underscore:'../dep/underscore/underscore'
+            }
+        });
+
+        require(['Dialog','lib'], function (Dialog,lib) {
+
+            var dialog = new Dialog({
+                element:'j-dialog',
+                trigger:'.j-dialog-show',
+                height:'100px',
+                width:'500px'
+            });
+
+        });
+    </script>
+
+</body>
+</html>

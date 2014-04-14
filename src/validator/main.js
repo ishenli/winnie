@@ -1,5 +1,6 @@
 /**
  * @file 验证组件的核心模块
+ * @author shenli （meshenli@gmail.com）
  */
 define(function (require) {
 
@@ -199,7 +200,8 @@ define(function (require) {
     });
 
 
-    //helper
+    //helpers
+
     /**
      * 根据Item的element 在item数组中找到item
      * @param selector Item的element对象

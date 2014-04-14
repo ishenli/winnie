@@ -8,10 +8,13 @@ define(function (require) {
     var lib = require('./lib');
     var Class = require('./lib/class');
 
+    var Aspect = require('./lib/aspect');
+
     var Control = Class.create({
 
         type: 'Control',
 
+        Implements:[Aspect],
         /**
          * new时执行该方法
          * @param config
@@ -69,7 +72,9 @@ define(function (require) {
             var now = this.options;
 
             for(key in options) {
-                if(!options.hasOwnProperty(key)) continue;
+                if(!options.hasOwnProperty(key)) {
+                    continue;
+                }
 
                 //如果实例中添加的配置不存在，则添加一个新的空对象给该属性
                 var option = now[key] || (now[key] = {});
@@ -143,7 +148,9 @@ define(function (require) {
             (value['value']!==undefined)
             && (option['value'] = cloneValue(value['value'],option['value']));
 
-            if(isUserValue) continue;
+            if(isUserValue) {
+                continue;
+            }
 
             //继承的不是value的配置加到实例上
             for(var i in OPTION_LIST) {
@@ -239,7 +246,7 @@ define(function (require) {
                 receiver[key] = cloneValue(supplier[key], receiver[key]);
             }
         }
-        return receiver
+        return receiver;
     }
 
 
