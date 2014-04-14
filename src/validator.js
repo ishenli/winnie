@@ -10,7 +10,9 @@ define(function (require) {
     var lib = require('./lib');
 
     var Validator = ValidatorMain.extend({
+
         type: 'Validator',
+
         options: {
             explainClass: 'ui-form-explain',
             itemClass: 'ui-form-item',
@@ -44,10 +46,10 @@ define(function (require) {
             var item = this.getItem(ele);
 
             //返回节点数组
-            var explainEle=lib.getChildrenByClass(item, this.get('explainClass'));
+            var explainEle=lib.closest(item, this.get('explainClass'));
 
             //如果没有找到该节点，则返回null
-            if(!explainEle || explainEle.length == 0) {
+            if(!explainEle || explainEle.length === 0) {
                 var div = document.createElement('div');
                 div.className = this.get('explainClass');
                 item.appendChild(div);
