@@ -1,7 +1,7 @@
 {
     "name": "winne",
     "version": "0.0.1",
-    "description": "a sample ui library",
+    "description": "a simple ui library",
     "main": "index.js",
     "scripts": {
         "test": "node test"
