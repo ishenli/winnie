@@ -1,5 +1,5 @@
 /**
- * @file file
+ * @file Control test
  * @author shenli
  */
 define(function (require) {
@@ -11,9 +11,6 @@ define(function (require) {
     describe('Control', function () {
 
         it('newClass init',function (){
-//            function Widget(){}
-//
-//            lib.inherit(Widget, Control);
 
             var instance = new Control();
 

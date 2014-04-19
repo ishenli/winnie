@@ -7,7 +7,6 @@ define(function (require) {
     var Overlay = require('./Overlay');
     var Mask = require('./Mask');
     var lib = require('./lib');
-    var aop = require('./lib/aop');
 
     var Dialog = Overlay.extend({
         options: {
@@ -15,16 +14,9 @@ define(function (require) {
             classPrefix: 'ui-dialog',
             hasMask: true,
             closeTpl: 'x',
-            content: {
-                value: '',
-                setter: function (val) {
-                    //
-                }
-            },
+            content: '',
             height: null,
             effect: 'none',
-            //自适应高度
-            autoFix: true,
             //默认定位
             align: {
                 value: {
@@ -38,6 +30,7 @@ define(function (require) {
         init: function () {
             Dialog.superClass.init.call(this);
             this._initTriggers();
+
             this.parseElement();
             //设置mask
             this._initMask();
@@ -47,13 +40,14 @@ define(function (require) {
                 classPrefix: this.get('classPrefix')
             });
 
-            this.contentElement = lib.query('[data-role=content]');
+            this.contentElement = lib.query('[data-role=content]',this.element);
 
             lib.setStyle(this.contentElement, {
                 height:'100%',
                 zoom:1
             });
 
+            this._renderContent();
         },
         show: function () {
             Dialog.superClass.show.call(this);
@@ -117,6 +111,22 @@ define(function (require) {
                 return;
             }
             Mask.hide();
+        },
+//        渲染dialog的内容
+        _renderContent:function() {
+            var content = this.get('content');
+
+            //content为空
+            if(!content) {
+                return;
+            }
+            if(/^[\.\#]?\w+[^{]+\{[^}]*\}/.test(content)){
+                var html = lib. query(content);
+                if(html){
+                    return this.contentElement.appendChild(html);
+                }
+            }
+            this.contentElement.innerHTML = content;
         }
     });
     return Dialog;
