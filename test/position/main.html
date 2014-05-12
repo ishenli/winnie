@@ -43,7 +43,7 @@
         require.config({
             baseUrl: '../../src',
             paths: {
-                winne:'winne/asset',
+                winne:'./',
                 underscore:'../dep/underscore/underscore'
             }/*,
             packages:[
@@ -55,7 +55,7 @@
             ]*/
         });
 
-        require(['Position','lib'], function (Position,lib) {
+        require(['widget/Position','lib'], function (Position,lib) {
             var base = lib.g('base');
             var target = lib.g('target');
 

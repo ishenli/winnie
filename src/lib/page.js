@@ -4,7 +4,7 @@
  * copy from https://github.com/ecomfe/esui/blob/master/src/lib/page.js
  * http://www.zhangxinxu.com/wordpress/?p=1907
  */
-define(function (require) {
+define(function () {
 
     var documentElement = document.documentElement;
     var body = document.body;

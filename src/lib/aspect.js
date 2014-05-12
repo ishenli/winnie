@@ -1,5 +1,5 @@
 /**
- * @file file
+ * @file aspect 对widget提供aop支持
  * @author ishenli
  * from https://github.com/aralejs/base/edit/master/src/aspect.js
  */

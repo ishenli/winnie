@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>position test</title>
+    <link rel="stylesheet" href="../../dep/lacus/asset/all/all.css"/>
+    <style>
+        img {
+            display: block;
+            width: 300px;
+            height: 150px;
+        }
+    </style>
+</head>
+<body>
+<div id="loading"></div>
+<script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/1-6-10/esl.js"></script>
+<script>
+    require.config({
+        baseUrl: '../../src',
+        paths: {
+            winnie: './',
+            underscore: '../dep/underscore/underscore'
+        }/*,
+         packages:[
+         {
+         name: 'underscore',
+         location: '../dep/underscore',
+         main:'underscore'
+         }
+         ]*/
+    });
+
+    var html = ['<div class="lazy-img">'];
+    for (var i = 0; i < 100; i++ ) {
+        if(i%2==0) {
+            html.push('<img width="270" height= "129" src="http://tb2.bdstatic.com/tb/static-common/img/search_logo_039c9b99.png" data-url="http://www.baidu.com/img/bdlogo.gif" />');
+        } else {
+            html.push('<img width="270" height= "129" src="" data-url="http://www.baidu.com/img/bdlogo.gif" />');
+        }
+    }
+    html.push('</div>');
+    document.getElementById('loading').innerHTML = (html.join(''));
+
+    require(['lib','widget/Lazyload'],function(lib,Lazyload) {
+
+        new Lazyload({
+            element:'#loading img',
+            eventName:'scrollStop'
+        });
+    });
+</script>
+
+</body>
+</html>

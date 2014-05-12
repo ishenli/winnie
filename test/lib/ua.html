@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ua test</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../dep/lacus/asset/all/all.css"/>
+</head>
+<body>
+    <div class="ui-box" id="box" >
+        <div class="ui-box-head">
+            <h3 class="ui-box-title">ua test</h3>
+        </div>
+        <div class="ui-box-container ui-box-content">
+            <div class="ui-box-content" id="uaResult">
+                result
+            </div>
+        </div>
+    </div>
+    <script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/1-6-10/esl.js"></script>
+    <script>
+        require.config({
+            baseUrl: '../../src',
+            paths: {
+                winne:'winne/asset',
+                underscore:'../dep/underscore/underscore'
+            }
+        });
+
+        require(['lib/ua','lib'], function (ua,lib) {
+
+            lib.g('uaResult').innerHTML = JSON.stringify(ua);
+        });
+    </script>
+
+</body>
+</html>

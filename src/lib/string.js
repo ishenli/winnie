@@ -2,7 +2,7 @@
  * @file string 辅助
  * @author shenli
  */
-define(function (require) {
+define(function () {
 
     var toString = Object.prototype.toString;
 
@@ -50,6 +50,7 @@ define(function (require) {
      * 去掉字符串两边的空白
      */
     lib.trim = (function () {
+        //正则可以参考 https://www.imququ.com/post/bom-and-javascript-trim.html
         var whitespace = /^[\s\xa0\u3000]+|[\u3000\xa0\s]+$/g;
 
         return function (str, triment) {

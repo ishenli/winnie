@@ -18,7 +18,7 @@ module.exports = function(config) {
       'dep/underscore/underscore.js',
       {pattern: 'src/**/*.js', included: false},
 //      {pattern: 'test/**/eventSpec.js', included: false},
-      {pattern: 'test/**/controlSpec.js', included: false},
+      {pattern: 'test/**/uaSpec.js', included: false},
 //      {pattern: 'test/**/stringSpec.js', included: false},
 //      {pattern: 'test/**/validatorSpec.js', included: false},
       {pattern: 'test/**/*Helper.js', included: false},

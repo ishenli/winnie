@@ -4,7 +4,7 @@
  */
 define(function (require) {
 
-//    var u = require('underscore');
+    var u = require('underscore');
     var lib = require('./dom');
 
     var event = {};
@@ -121,12 +121,12 @@ define(function (require) {
         }
 
         // 标准浏览器使用dispatchEvent方法
-        var event = document.createEvent('HTMLEvents');
+        var env = document.createEvent('HTMLEvents');
         // initEvent接受3个参数：
         // 事件类型，是否冒泡，是否阻止浏览器的默认行为
-        event.initEvent(realType, true, true);
+        env.initEvent(realType, true, true);
 
-        element.dispatchEvent(event);
+        element.dispatchEvent(env);
 
         return element;
     }
@@ -137,6 +137,23 @@ define(function (require) {
         return element;
     };
 
+    /**
+     * 只执行一次的事件
+     * @param ele
+     * @param type
+     * @param fun
+     */
+    lib.one = function (ele, type, fun) {
+
+        ele = lib.g(ele);
+
+        var callee = function () {
+            ele.removeEventListener(type, callee, false);
+            fun();
+        };
+
+        ele.addEventListener(type, callee, false);
+    };
     /**
      * 简单的事件代理
      * @param el 委托的元素
@@ -207,6 +224,36 @@ define(function (require) {
         e = e || window.event;
         return e.target || e.srcElement;
     };
+
+
+
+    //支持scrollStop
+    (function (win) {
+        function registerScrollStop() {
+            event.on(win, 'scroll', u.debounce(function () {
+                event.fire(win, 'scrollStop');
+            }, 80, false));
+        }
+
+        function backEventOffHandler() {
+            //在离开页面，前进或后退回到页面后，重新绑定scroll,
+            // 需要un掉所有的scroll，否则scroll时间不触发
+            event.un(win, 'scroll');
+            registerScrollStop();
+        }
+
+        registerScrollStop();
+
+        //todo 待统一解决后退事件触发问题
+        event.on(win, 'pageshow', function (e) {
+            //如果是从bfcache中加载页面，为了防止多次注册，需要先un掉
+            if (e.persisted) {
+                event.un(win, 'touchstart', backEventOffHandler);
+                event.one(win, 'touchstart', backEventOffHandler);
+            }
+        });
+    }(window));
+
 
     return event;
 });
