@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>dom test</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../dep/lacus/asset/all/all.css"/>
+    <script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/1-6-10/esl.js"></script>
+</head>
+<body>
+    <div class="ui-box" id="box" >
+        <div class="ui-box-head">
+            <h3 class="ui-box-title">dom test</h3>
+        </div>
+        <div class="ui-box-container ui-box-content">
+            <div class="ui-box-content" id="innerNode">
+                inner
+            </div>
+        </div>
+    </div>
+    <script>
+        require.config({
+            baseUrl: '../../src',
+            paths: {
+                winne:'winne/asset',
+                underscore:'../dep/underscore/underscore'
+            }
+        });
+
+        require(['lib'], function (lib) {
+            var wrap = document.createElement('div');
+            lib.setStyle(wrap,{
+                backgroundColor:'red'
+            });
+
+            lib.wrap(wrap, lib.g('innerNode'));
+        });
+    </script>
+
+</body>
+</html>

@@ -13,10 +13,12 @@
     "dependencies": {
         "lacus":"https://github.com/ishenli/lacus.git",
         "esl":"https://github.com/ecomfe/esl.git",
+        "etpl":"https://github.com/ecomfe/etpl.git",
         "html5shiv": "*",
-        "handlebars": "~1.0.0",
+        "handlebars": "~1.3.0",
         "async":"*",
-        "moye": "https://github.com/ecomfe/moye/archive/master.zip"
+        "moye": "https://github.com/ecomfe/moye/archive/master.zip",
+        "saber-run":"https://github.com/ecomfe/saber-run.git"
     },
     "devDependencies": {
         "jasmine-jquery": "~1.7.0",

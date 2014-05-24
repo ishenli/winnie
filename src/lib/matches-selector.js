@@ -2,7 +2,7 @@
  * @file matches-selector
  * @author ishenli
  */
-define(function (require) {
+define(function () {
     var proto = Element.prototype;
 
     var vendor = proto.matches

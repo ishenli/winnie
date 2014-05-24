@@ -8,12 +8,13 @@ define(function (require) {
     var lib = require('winnie/lib');
     var Class = require('winnie/lib/class');
     var Aspect = require('winnie/lib/aspect');
+    var Emitter = require('winnie/lib/emitter');
 
     var Control = Class.create({
 
         type: 'Control',
 
-        Implements:[Aspect],
+        Implements:[Aspect,Emitter],
         /**
          * new时执行该方法
          * @param config
@@ -30,7 +31,11 @@ define(function (require) {
 
             var options = this.options = {};
 
-            mergeInheritedOptions(options, this);
+            var specialOptions = this.propsInOptions || [];
+
+            //合并options
+            mergeInheritedOptions(options, this,specialOptions);
+
 
             // config 是实例传递进来的配置，与控件的默认配置合并
             if(config ){
@@ -41,6 +46,9 @@ define(function (require) {
             //这里应该所有的配置项目都已经合并完毕，每个配置项目都转为
             // {value:'',getter:'',setter:''}
             setSetterOptions(this, options, config);
+
+            //某些属性需要从options中拿出来，放到实例上
+            copySpecialOptions(specialOptions, this, options, true);
 
         },
 
@@ -96,8 +104,10 @@ define(function (require) {
     });
 
     //helpers
-    function mergeInheritedOptions(options, instance) {
+    function mergeInheritedOptions(options, instance,specialOptions) {
         var inherited = []; // 存储继承的属性
+
+        //实例的原型
         var proto = instance.constructor.prototype;
         while (proto) {
 
@@ -105,6 +115,9 @@ define(function (require) {
             if (!proto.hasOwnProperty('options')) {
                 proto.options = {};
             }
+
+            //将options中的个别配置放到实例上
+            copySpecialOptions(specialOptions, proto.options, proto);
 
             if (!u.isEmpty(proto.options)) {
                 inherited.unshift(proto.options);
@@ -215,6 +228,17 @@ define(function (require) {
         return false;
     }
 
+
+    function copySpecialOptions(specialOptions,receiver,supplier,isOption2Prop) {
+        for(var i= 0,len = specialOptions.length;i<len;i++) {
+            var key = specialOptions[i];
+
+            //讲属性放到实例上
+            if(supplier.hasOwnProperty(key)) {
+                receiver[key] = isOption2Prop ? receiver.get(key) : supplier[key];
+            }
+        }
+    }
     /**
      * clone 数组和object ，其余不变
      * @param value 子类的值

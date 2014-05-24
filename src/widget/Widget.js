@@ -3,16 +3,21 @@
  * @author shenli
  */
 define(function (require) {
-    var u = require('underscore');
     var lib = require('winnie/lib');
     var Control = require('./Control');
 
     var Widget = Control.extend({
 
-        type:'Widget',
+        type: 'Widget',
 
-        element:null,
+        element: null,
+        propsInOptions: ['element'],
 
+        options: {
+            id: null,
+            template: '<div></div>',
+            parentNode: document.body
+        },
         /**
          * 销毁控件时执行的方法
          */
@@ -32,139 +37,70 @@ define(function (require) {
 
         },
         /**
-         * 添加事件绑定
-         * @public
-         * @param {string} type 事件类型
-         * @param {Function} listener 要添加绑定的监听器
-         */
-        on: function (type, listener) {
-            if (u.isFunction(type)) {
-                listener = type;
-                type = '*';
-            }
-
-            this._listeners = this._listeners || {};
-            var listeners = this._listeners[type] || [];
-
-            if (u.indexOf(listeners, listener) < 0) {
-                listener.$type = type;
-                listeners.push(listener);
-            }
-
-            this._listeners[type] = listeners;
-
-            return this;
-        },
-        /**
-         * 解除事件绑定
-         *
-         * @public
-         * @param {string} type 事件类型
-         * @param {Function} listener 要解除绑定的监听器
-         */
-        un: function (type, listener) {
-
-            if (u.isFunction(type)) {
-                listener = type;
-                type = '*';
-            }
-
-            this._listeners = this._listeners || {};
-            var listeners = this._listeners[type];
-
-            if (listeners) {
-                if (listener) { //删除某个事件
-                    var index = u.indexOf(listeners, listener);
-
-                    if (~index) {
-                        delete listeners[index];
-                    }
-                } else {
-                    //http://stackoverflow.com/questions/4804235/difference-between-array-length-0-and-array
-                    listeners.length = 0; //清空数组
-                    delete this._listeners[type]; //删除数组的引用
-                }
-            }
-
-            return this;
-        },
-
-        /**
-         * 添加单次事件绑定
-         *
-         * @public
-         * @param {string=} type 事件类型
-         * @param {Function} listener 要添加绑定的监听器
-         */
-        once: function (type, listener) {
-            if (u.isFunction(type)) {
-                listener = type;
-                type = '*';
-            }
-
-            var me = this;
-            var realListener = function () {
-                listener.apply(me, arguments);
-                me.un(type, realListener);
-            };
-            this.on.call(me, type, realListener);
-        },
-
-        /**
-         * 触发指定事件
-         *
-         * @public
-         * @param {string} type 事件类型
-         * @param {Object} args 透传的事件数据对象
-         */
-        fire: function (type/*,args*/) {
-            this._listeners = this._listeners || {};
-            var listeners = this._listeners[type];
-            var args = Array.prototype.slice.call(arguments, 1);
-            args.push(type);
-            if (listeners) {
-                u.each(
-                    listeners,
-                    function (listener) {
-
-                        //args = args || {};
-                        //args.type = type;
-
-                        listener.apply(this,args);
-
-                    },
-                    this
-                );
-            }
-
-            if (type !== '*') {
-                this.fire('*', args);
-            }
-
-            return this;
-        },
-        /**
          * 组件初始化执行的方法
          * @param config
          */
-        initialize:function(config) {
+        initialize: function (config) {
 
-           //因为类构建的时候只调用自己的initialize方法
+            //因为类构建的时候只调用自己的initialize方法
 
-           Widget.superClass.initialize.call(this, config);
+            Widget.superClass.initialize.call(this, config);
 
-            config = config || {};
-
-            /*if(!config.element){
-                throw  new Error('no element is passed');
-            }*/
-
-            config.element && (this.element = lib.g(config.element));
+            //初始化元素
+            this.parseElement();
 
             this.init && this.init(config);
+        },
+
+        parseElement: function () {
+
+            var element = this.element;
+
+            //用户传入dom元素或者id
+            if (element) {
+                this.element = lib.g(element);
+            }
+            //从模板中拿
+            else if (this.get('template')) {
+                this.parseElementFromTemplate();
+            }
+
+            if (!this.element) {
+                throw new Error('element is invalid');
+            }
+        },
+        parseElementFromTemplate: function () {
+            this.element = stringToDom(this.get('template'));
+        },
+
+        /**
+         * 讲element插入到父节点中
+         * @returns {Widget}
+         */
+        render: function () {
+
+            if (!this.rendered) {
+                this.rendered = true;
+            }
+
+            var parentNode = this.get('parentNode');
+
+            if (parentNode && !lib.isInDocument(this.element)) {
+                parentNode.appendChild(this.element);
+            }
+
+            return this;
         }
     });
 
+
+    function stringToDom(str) {
+        var div = document.createElement('div');
+        if (typeof str === 'string') {
+            div.innerHTML = str;
+        }
+        return div.firstChild;
+    }
 
     return Widget;
 });

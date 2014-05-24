@@ -202,11 +202,6 @@ module.exports = function(grunt) {
                 );
 
                 // 扩展的自定义配置，扁平化的方式
-                // 如在 task/wangyou.js 中配置：
-                // 'watch.$-hbs': {...}
-                // 其中键名会替换成：
-                // 'watch.wangyou-hbs'，等同于
-                // watch: { wangyou-hbs: {...} }
                 var extensions = config.ext;
                 if (extensions) {
 

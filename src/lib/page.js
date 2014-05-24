@@ -26,8 +26,8 @@ define(function () {
         );
     };
     /**
-     * 获取页面宽度
-     * @return {number} 页面宽度
+     * 获取页面内容宽度
+     * @return {number} 页面内容宽度
      */
     page.getWidth = function () {
         return Math.max(

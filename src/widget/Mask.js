@@ -9,23 +9,23 @@ define(function (require) {
     var lib = require('winnie/lib');
 
     var Mask = Overlay.extend({
+        type:'Mask',
         options: {
             // 统一样式前缀
             classPrefix: 'ui-mask',
             width: '100%',
             height: '100%',
-            opacity: 0.2,
+            opacity: 0.8,
             backgroundColor: '#000',
             //默认定位
-            algin: {
-                value: {
-                    selfXY: ['0', '0'],
-                    baseXY: ['50%', '42%']
-                }
+            align: {
+                baseElement:undefined
             }
         },
         show: function () {
+
             Mask.superClass.show.call(this);
+
             lib.setStyle(this.element, {
                 opacity: this.get('opacity'),
                 backgroundColor:this.get('backgroundColor')

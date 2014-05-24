@@ -16,9 +16,11 @@ requirejs.config({
     baseUrl: '/base/src',
 
     paths: {
+        winnie:'.',
         underscore: '../dep/underscore/underscore',
 //        moye: '../dep/moye/src/ui',
-        test: '../test'
+        test: '../test',
+        etpl:'../dep/etpl/src/main'
     },
 
     // ask Require.js to load these files (all our tests)

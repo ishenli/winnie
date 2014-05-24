@@ -3,53 +3,64 @@
  * @author shenli
  */
 define(function (require) {
-    var Control = require('Control');
-    var Widget = require('Widget');
+    var Control = require('widget/Control');
+    var Widget = require('widget/Widget');
 
     var lib = require('lib');
 
+    var htmlHelper = require('test/htmlHelper');
+
+    var container;
+
+    beforeEach(function () {
+        container = htmlHelper.add(''
+                + '<div id="test" title="hello"></div>'
+        );
+    });
+
     describe('Control', function () {
 
-        it('newClass init',function (){
+        it('newClass init', function () {
 
             var instance = new Control();
 
             expect(instance.type).toEqual('Control');
         });
 
-        it('aspect',function(){
+        it('aspect', function () {
             var item = 1;
-            var test =Widget.extend({
-                show:function(){
+            var test = Widget.extend({
+                show: function () {
                     console.log(item);
                     return item;
                 }
             });
 
-            var intance =  new  test();
+            var instance = new test();
 
-            intance.show();
+            instance.show();
 
-            intance.before('show',function(){
+            instance.before('show', function () {
                 console.log('before', item);
-               item++;
+                item++;
             });
 
-            intance.after('show',function(){
-               item++;
+            instance.after('show', function () {
+                item++;
                 console.log('after', item);
             });
 
-            expect(intance.show()).toEqual(2);
+            expect(instance.show()).toEqual(2);
 
-            intance.show();
         });
 
-//        it('元素包含另一个元素',function () {
-//            var ul = lib.g('ulTag');
-//            var li = lib.g('liTag');
-//            expect(lib.dom.contains(ul, li)).toBeTruthy();
-//        });
+        it('element init',function () {
+            var test = new Widget({
+                element: container.query('#test')
+            });
+
+            expect(test.element.getAttribute('title')).toEqual('hello');
+        });
 
     });
 });

@@ -5,22 +5,21 @@
  */
 define(function() {
 
-    var Aspect = {};
+    var exports = {};
 
-    // 在指定方法执行前，先执行 callback
-    Aspect.before = function(methodName, callback, context) {
+    exports.before = function(methodName, callback, context) {
         return weave.call(this, 'before', methodName, callback, context);
     };
 
 
-    // 在指定方法执行后，再执行 callback
-    Aspect.after = function(methodName, callback, context) {
+// 在指定方法执行后，再执行 callback
+    exports.after = function(methodName, callback, context) {
         return weave.call(this, 'after', methodName, callback, context);
     };
 
 
-    // Helpers
-    // -------
+// Helpers
+// -------
 
     var eventSplitter = /\s+/;
 
@@ -56,14 +55,12 @@ define(function() {
             var args = Array.prototype.slice.call(arguments);
             var beforeArgs = ['before:' + methodName].concat(args);
 
-            // prevent if trigger return false
-            if (this.fire.apply(this, beforeArgs) === false) return;
+            // prevent if emit return false
+            if (this.emit.apply(this, beforeArgs) === false) return;
 
-            //运行老方法
             var ret = old.apply(this, arguments);
-
             var afterArgs = ['after:' + methodName, ret].concat(args);
-            this.fire.apply(this, afterArgs);
+            this.emit.apply(this, afterArgs);
 
             return ret;
         };
@@ -71,5 +68,5 @@ define(function() {
         this[methodName].__isAspected = true;
     }
 
-    return Aspect;
+    return exports;
 });

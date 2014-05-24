@@ -1,5 +1,5 @@
 /**
- * @file event
+ * @file dom event
  * @author shenli （meshenli@gmail.com）
  */
 define(function (require) {
@@ -13,6 +13,11 @@ define(function (require) {
     var eventFix = {
         list: [],
         custom: []
+    };
+
+    //存储代理事件，用于销毁
+    var eventProxy = {
+        list: []
     };
 
     //修改标准浏览器不支持mouseenter
@@ -51,13 +56,27 @@ define(function (require) {
     }
     /**注册事件
      * @param {(HTMLElement | window)} element 目标元素
-     * @type {Function}
+     * @type {String}
      */
     event.on = document.addEventListener ?
-        function (element, type, listener) {
+        function (element, type, listener, context) {
+            var condition;
             var custom = eventFix.custom[type];
-            var condition = listener;
+
+            //指定执行的作用域，先这样写了，后期优化
+            if(context) {
+                condition = event.proxy(listener, context);
+
+                listener.index = eventProxy.list.length;
+                // 保存事件的标识，用于移除事件
+                eventProxy.list[listener.index] = condition;
+
+            } else {
+                condition = listener
+            }
+
             var realType = type;
+
             if (custom) {
                 realType = custom.base;
                 condition = function (e) {
@@ -72,6 +91,7 @@ define(function (require) {
                     eventFix.list[listener.index] = condition;
                 };
             }
+
             //第三个为true，则取消冒泡
             return element.addEventListener(realType, condition, !!arguments[3]);
         }
@@ -82,17 +102,24 @@ define(function (require) {
     /**
      * 为目标元素移除事件监听器
      * @param {(HTMLElement | window)} element 目标元素
+     * @param {(boolean)} isProxy 是否是代理的事件
      * @type {Function}
      */
     event.un = document.removeEventListener ?
-        function (element, type, listener) {
+        function (element, type, listener,isProxy) {
             var condition = listener;
             var custom = eventFix.custom[type];
             var realType = type;
+
             if (custom) {
                 realType = custom.base;
                 condition = eventFix.list[listener.index];
                 delete  eventFix.list[listener.index];
+                delete  listener.index;
+            }
+            if(isProxy) {
+                condition = eventProxy.list[listener.index];
+                delete  eventProxy.list[listener.index];
                 delete  listener.index;
             }
             element.removeEventListener(
@@ -163,14 +190,14 @@ define(function (require) {
      * @param capture
      * @returns {*}
      */
-    event.bind  = function(el,selector,type,fn,capture) {
+    event.bind = function (el, selector, type, fn, capture) {
         return event.on(el, type, function (e) {
             var target = event.getTarget(e);
             e.delegateTarget = lib.closest(target, selector, true, el);
-            if(e.delegateTarget) {
+            if (e.delegateTarget) {
                 fn.call(el, e);
             }
-        },capture);
+        }, capture);
     };
 
     /**
@@ -180,7 +207,7 @@ define(function (require) {
      * @param fn
      * @param capture
      */
-    event.unbind = function(el,type,fn,capture) {
+    event.unbind = function (el, type, fn, capture) {
         event.un(el, type, fn, capture);
     };
     /**
@@ -226,6 +253,12 @@ define(function (require) {
     };
 
 
+    event.proxy = function(func,context) {
+        var aArgs = Array.prototype.slice.call(arguments, 2);
+        return function() {
+            func.apply(  context, Array.prototype.slice.call(arguments, 0).concat(aArgs));
+        };
+    };
 
     //支持scrollStop
     (function (win) {

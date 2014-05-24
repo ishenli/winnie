@@ -43,6 +43,7 @@ define(function (require) {
         },
 
         hide:function() {
+
             if(!this.rendered) {
                 return this;
             }
@@ -54,44 +55,30 @@ define(function (require) {
 
             //用户计算window resize的定位计算
             Overlay.allOverlays.push(this);
-        },
-        render:function() {
-            var template =this.get('template');
 
-            if(lib.g(this.element)){
-                this.element = lib.g(this.element);
-                template && (this.element.innerHTML = template);
-            } else {
-//                var frag = document.createDocumentFragment();
-                var div = document.createElement('div');
-                if(template){
-                    div.innerHTML = template;
-                    this.element = div.children[0]
-                } else {
-                    this.element = div;
+            this.after('render',function() {
+
+                lib.setStyle(this.element,{
+                    width:this.get('width'),
+                    height:this.get('height'),
+                    zIndex:this.get('zIndex')
+                });
+
+                //首先将元素hide
+                var position = lib.getStyle(this.element, 'position');
+                if(position === 'static' || position === 'relative') {
+                    lib.setStyle(this.element,{
+                        position:'absolute',
+                        left:'-9999px',
+                        top:'-9999px'
+                    });
                 }
-                this.get('parentNode').appendChild(this.element);
-            }
 
-
-
-            lib.setStyle(this.element,{
-                width:this.get('width'),
-                height:this.get('height'),
-                zIndex:this.get('zIndex')
             });
 
-            //首先将元素hide
-            var position = lib.getStyle(this.element, 'position');
-            if(position === 'static' || position === 'relative') {
-                lib.setStyle(this.element,{
-                    position:'absolute',
-                    left:'-9999px',
-                    top:'-9999px'
-                });
-            }
-
-            this.rendered = true;
+            this.after('show',function() {
+                this._setPosition();
+            });
         },
         dispose:function() {
             lib.earse(this, Overlay.allOverlays);
@@ -99,7 +86,7 @@ define(function (require) {
         },
         _setPosition:function(align) {
 
-            if(!isInDocument(this.element)){
+            if(!lib.isInDocument(this.element)){
                 return;
             }
 
@@ -138,6 +125,9 @@ define(function (require) {
                 });
             }
 
+            //触发resize事件
+            this.fire('resize');
+
             return this;
         },
         /**
@@ -154,26 +144,25 @@ define(function (require) {
     });
 
     Overlay.blurOverlays = [];
+
     lib.on(document ,'click', function(e) {
         hideBlurOverlays(e);
     });
 
 
     //window resize 重新计算浮层
-    var timeout;
     var winHeight = lib.getViewHeight();
     var winWidth = lib.getViewWidth();
+
     Overlay.allOverlays = [];
 
-    lib.on(window,'resize',function() {
-        timeout && clearTimeout(timeout);
-        timeout = setTimeout(function(){
+    var resizeFun = u.debounce(function () {
             var winNewHeight = lib.getViewHeight();
             var winNewWidth = lib.getViewWidth();
 
-            if(winNewHeight !== winHeight || winNewWidth !== winWidth) {
-                u.each(Overlay.allOverlays,function(item,i) {
-                    if(!item || !item.get('visible')) {
+            if (winNewHeight !== winHeight || winNewWidth !== winWidth) {
+                u.each(Overlay.allOverlays, function (item, i) {
+                    if (!item || !item.get('visible')) {
                         return;
                     }
                     item._setPosition();
@@ -181,14 +170,10 @@ define(function (require) {
             }
             winWidth = winNewWidth;
             winHeight = winNewHeight;
-        },80);
-    });
+    }, 200);
+
+    lib.on(window,'resize',resizeFun);
     //helpers
-    function isInDocument(element) {
-        return lib.contains(document.documentElement,element);
-    }
-
-
     function hideBlurOverlays(e) {
         u.each(Overlay.blurOverlays,function(item,index) {
             // 当实例为空或隐藏时，不处理

@@ -10,7 +10,6 @@ define(function (require) {
 
     var lib = {};
 
-    lib.dom = {};
     /**
      * 获取元素
      * @param id 元素ID || dom元素
@@ -29,6 +28,9 @@ define(function (require) {
      * @returns {Node}
      */
     lib.query = function (selector, el) {
+        if (!selector) {
+            return null;
+        }
         el = el || document;
         return el.querySelector(selector);
     };
@@ -40,6 +42,10 @@ define(function (require) {
      * @returns {NodeList}
      */
     lib.queryAll = function (selector, el) {
+
+        if (!selector) {
+            return null;
+        }
         el = el || document;
         return el.querySelectorAll(selector);
     };
@@ -91,11 +97,13 @@ define(function (require) {
     };
 
     /**
-     * 将目标元素添加到基准元素之后
+     * 将目标元素添加
      * @param {HTMLElement} el 被添加的目标元素
      * @param {HTMLElement|String} stuff 添加的目标元素或字符串
      * @return {HTMLElement} 被添加的目标元素
      */
+
+    //插入到元素内部
     lib.append = function (el,stuff) {
         return lib.insert(el, stuff, "beforeEnd");
     };
@@ -108,6 +116,7 @@ define(function (require) {
         return lib.insert(el, stuff, "beforeBegin");
     };
 
+    //插入到元素同级
     lib.after = function (el,stuff) {
         return lib.insert(el, stuff, "afterEnd");
     };
@@ -122,6 +131,7 @@ define(function (require) {
      * col, colgroup, frameset, html, head, style,
      * title,table, tbody, tfoot, thead, 与tr;
      * http://www.cnblogs.com/rubylouvre/archive/2009/12/14/1622631.html
+     * https://developer.mozilla.org/zh-CN/docs/Web/API/Element.insertAdjacentHTML
      */
     lib.insert = function (el, stuff, where) {
         var doc = el.ownerElement || document;
@@ -176,7 +186,8 @@ define(function (require) {
         };
 
         //如果是节点则复制一份
-        stuff = stuff.nodeType ? stuff.cloneNode(true) : stuff;
+//        stuff = stuff.nodeType ? stuff.cloneNode(true) : stuff;
+
         if (el.insertAdjacentHTML) {//ie,chrome,opera,safari都已实现insertAdjactentXXX家族
             el['insertAdjacent' + (stuff.nodeType ? 'Element' : 'HTML')](where, stuff);
         } else {
@@ -187,6 +198,25 @@ define(function (require) {
         return el;
     };
 
+    /**
+     * 包裹dom节点
+     * @param wrapEle
+     * @param innerEles
+     */
+    lib.wrap = function(wrapEle,innerEles) {
+        if(!innerEles.length) { //是一个元素
+            innerEles = [innerEles];
+        }
+
+        for(var i =0;i<innerEles.length;i++) {
+            var item = innerEles[i].cloneNode(true);
+            wrapEle.appendChild(item);
+        }
+
+        var parentNode = innerEles[0].parentNode;
+        parentNode.innerHTML = '';
+        parentNode.appendChild(wrapEle);
+    };
     /**
      * 判断一个元素是否包含另一个元素
      * @param container 包含的元素
@@ -362,6 +392,16 @@ define(function (require) {
         }
 
         return walk(element, 'nextSibling', 'firstChild', hasClass, all);
+    };
+
+
+    /**
+     * 元素是否在文档结构中
+     * @param element
+     * @returns {boolean|*|Boolean}
+     */
+    lib.isInDocument = function(element) {
+        return lib.contains(document.documentElement,element);
     };
 
 
