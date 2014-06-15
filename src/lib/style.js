@@ -130,8 +130,8 @@ define(function (require) {
                 name = property.charAt(0).toUpperCase()
                     + property.substring(1);
                 for (var i = 0, prefix; prefix = prefixes[i]; i++) {
-                    if (prefix + name in style) {
-                        property = '-' + prefix + '-' + property;
+                    if (prefix + name in style) { //webkitBoxShadow
+                        property = '-' + prefix + '-' + property; // -webkit-box-shadow
                         break;
                     }
                 }

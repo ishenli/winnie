@@ -60,12 +60,10 @@ define(function (require) {
                 var target = lib.getTarget(e);
                 var index = target.getAttribute('data-index');
 
-                me.show.call(me);
+                me.show();
 
                 me.showImg(me.get('imgList')[index]);
             });
-
-
 
             lib.bind(me.element, me.get('prevBtn'), evt, function(e){
                 lib.preventDefault(e);

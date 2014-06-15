@@ -6,9 +6,12 @@ define(function (require) {
 
     var u = require('underscore');
     var lib = require('./dom');
+    var DOC = document;
+    var W3C = DOC.dispatchEvent; //IE9开始支持W3C的事件模型与getComputedStyle取样式值
+    var html = DOC.documentElement; //HTML元素
+//    var head = DOC.head || DOC.getElementsByTagName("head")[0]; //HEAD元素
 
     var event = {};
-
     //存储基本的事件，如自定义事件和事件修复
     var eventFix = {
         list: [],
@@ -22,7 +25,7 @@ define(function (require) {
 
     //修改标准浏览器不支持mouseenter
     //http://www.w3help.org/zh-cn/causes/BT9017
-    if (!('onmouseenter' in document)) {
+    if (!('onmouseenter' in DOC)) {
         var check = function (e) {
 
             //relatedTarget
@@ -64,7 +67,7 @@ define(function (require) {
             var custom = eventFix.custom[type];
 
             //指定执行的作用域，先这样写了，后期优化
-            if(context) {
+            if (context) {
                 condition = event.proxy(listener, context);
 
                 listener.index = eventProxy.list.length;
@@ -105,8 +108,8 @@ define(function (require) {
      * @param {(boolean)} isProxy 是否是代理的事件
      * @type {Function}
      */
-    event.un = document.removeEventListener ?
-        function (element, type, listener,isProxy) {
+    event.un = DOC.removeEventListener ?
+        function (element, type, listener, isProxy) {
             var condition = listener;
             var custom = eventFix.custom[type];
             var realType = type;
@@ -117,7 +120,7 @@ define(function (require) {
                 delete  eventFix.list[listener.index];
                 delete  listener.index;
             }
-            if(isProxy) {
+            if (isProxy) {
                 condition = eventProxy.list[listener.index];
                 delete  eventProxy.list[listener.index];
                 delete  listener.index;
@@ -138,7 +141,7 @@ define(function (require) {
      * 触发事件
      * @type {Function}
      */
-    event.fire = document.createEvent
+    event.fire = DOC.createEvent
         ? function (element, type) {
 
         var custom = eventFix.custom[type];
@@ -148,7 +151,7 @@ define(function (require) {
         }
 
         // 标准浏览器使用dispatchEvent方法
-        var env = document.createEvent('HTMLEvents');
+        var env = DOC.createEvent('HTMLEvents');
         // initEvent接受3个参数：
         // 事件类型，是否冒泡，是否阻止浏览器的默认行为
         env.initEvent(realType, true, true);
@@ -159,7 +162,7 @@ define(function (require) {
     }
         : function (element, type) {
         // IE浏览器支持fireEvent方法
-        var event = document.createEventObject();
+        var event = DOC.createEventObject();
         element.fireEvent('on' + type, event);
         return element;
     };
@@ -253,14 +256,14 @@ define(function (require) {
     };
 
 
-    event.proxy = function(func,context) {
+    event.proxy = function (func, context) {
         var aArgs = Array.prototype.slice.call(arguments, 2);
-        return function() {
-            func.apply(  context, Array.prototype.slice.call(arguments, 0).concat(aArgs));
+        return function () {
+            func.apply(context, Array.prototype.slice.call(arguments, 0).concat(aArgs));
         };
     };
 
-    //支持scrollStop
+    ////============================scrollStop===========================
     (function (win) {
         function registerScrollStop() {
             event.on(win, 'scroll', u.debounce(function () {
@@ -286,6 +289,68 @@ define(function (require) {
             }
         });
     }(window));
+
+    //============================domReady机制===========================
+    var readyList = [];
+    event.ready = function (fn) {
+        if (readyList) {
+            readyList.push(fn);
+        } else {
+            fn();
+        }
+    };
+
+    var readyFn,readyEvent = W3C
+            ? 'DOMContentLoaded'
+            : 'readyStateChange';
+
+    function fireReady(){
+
+        u.each(readyList,function(fn){
+            fn();
+        });
+        readyList = null;
+
+        fireReady = function(){};
+    }
+
+    function doScrollCheck(){
+        //ie 在dom未加载完全，执行doScroll（'left'）会抛出异常
+        //http://msdn.microsoft.com/en-us/library/ie/ms536414(v=vs.85).aspx
+        try{
+            html.doScroll('left');
+        }catch(e){
+            setTimeout(doScrollCheck);
+        }
+    }
+
+    //firefox 3.6 之前不支持readyState,通过判断body是否已经生成模拟readyState
+    if(!DOC.readyState){
+        var readyState = DOC.readyState = DOC.body ? 'complete' :'loading';
+    }
+
+    if(DOC.readyState === 'complete'){
+        fireReady();
+    } else {
+        event.on(DOC,readyEvent,readyFn = function() {
+            if(W3C || DOC.readyState ==='complete'){
+                fireReady();
+                if(readyState) {
+                    DOC.readyState = 'complete';
+                }
+            }
+        });
+
+        if(html.doScroll) {
+            try{
+                if(self.eval === parent.eval) {
+                    doScrollCheck();
+                }
+            }catch (e){
+                doScrollCheck();
+            }
+        }
+    }
 
 
     return event;

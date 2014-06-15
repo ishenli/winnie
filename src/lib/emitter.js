@@ -51,7 +51,9 @@ define(function () {
 
         while (event = events.shift()) {
 
+            //获取某个事件的集合
             list = eventsList[event] || (eventsList[event] = []);
+
             currentListeners = list.length;
 
             if (currentListeners >= maxListeners && maxListeners !== 0) {
@@ -166,8 +168,10 @@ define(function () {
 
         return returned;
     };
+
+
     //helpers
-    keys = Object.keys ? Object.keys : function (list) {
+    var keys = Object.keys ? Object.keys : function (list) {
         var result = [];
         for (var name in list) {
             if (list.hasOwnProperty(name)) {

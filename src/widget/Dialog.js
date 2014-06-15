@@ -66,6 +66,7 @@ define(function (require) {
             Dialog.superClass.hide.call(this);
             return this;
         },
+
         dispose: function() {
             this._hideMask();
             return Dialog.superClass.dispose.call(this);
