@@ -6,9 +6,9 @@ define(function (require) {
 
     var Widget = require('../Widget');
     var u = require('underscore');
-    var lib = require('../lib');
+    var lib = require('winnie/lib');
     var Item = require('./item');
-    var async = require('../lib/async');
+    var async = require('winnie/lib/async');
 
     var validators = [];
 

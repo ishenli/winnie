@@ -4,7 +4,7 @@
  */
 define(function (require) {
 
-    var lib = require('./lib');
+    var lib = require('winnie/lib');
 
     var VIEWPORT = { _id: 'VIEWPORT', nodeType: 1 };
     var Position = {};

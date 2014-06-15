@@ -4,12 +4,12 @@
 define(function (require) {
 
     var Widget = require('../Widget');
-    var lib = require('../lib');
+    var lib = require('winnie/lib');
     var u = require('underscore');
 
     var Rule = require('./rule');
 
-    var async = require('../lib/async');
+    var async = require('winnie/lib/async');
 
     var setterConfig={
         value:null,

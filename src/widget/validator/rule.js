@@ -2,7 +2,7 @@
  * @file validator
  */
 define(function (require) {
-    var lib = require('../lib');
+    var lib = require('winnie/lib');
     var u = require('underscore');
     var rules = [];
     var messages = {};

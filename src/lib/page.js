@@ -4,7 +4,7 @@
  * copy from https://github.com/ecomfe/esui/blob/master/src/lib/page.js
  * http://www.zhangxinxu.com/wordpress/?p=1907
  */
-define(function (require) {
+define(function () {
 
     var documentElement = document.documentElement;
     var body = document.body;
@@ -26,8 +26,8 @@ define(function (require) {
         );
     };
     /**
-     * 获取页面宽度
-     * @return {number} 页面宽度
+     * 获取页面内容宽度
+     * @return {number} 页面内容宽度
      */
     page.getWidth = function () {
         return Math.max(

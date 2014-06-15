@@ -7,7 +7,7 @@
 define(function (require) {
 
     var ValidatorMain = require('./validator/main');
-    var lib = require('./lib');
+    var lib = require('winnie/lib');
 
     var Validator = ValidatorMain.extend({
 

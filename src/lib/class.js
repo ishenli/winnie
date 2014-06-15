@@ -1,5 +1,5 @@
 /**
- * @file file
+ * @file class
  * @author shenli
  * thanks to https://github.com/aralejs/class/blob/master/src/class.js
  */

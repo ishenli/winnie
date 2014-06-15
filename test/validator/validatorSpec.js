@@ -1,5 +1,5 @@
 /**
- * @file file
+ * @file Validator test
  * @author shenli （meshenli@gmail.com）
  */
 define(function(require) {

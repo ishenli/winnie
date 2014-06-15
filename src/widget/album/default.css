@@ -1,0 +1,57 @@
+/**
+ * @file 默认album样式
+ * @author ishenli（meshenli@gmail.com）
+ */
+.prev .iconfont-prev:after {
+  content: '\f016e';
+}
+.iconfont-next:after {
+  content: '\359e';
+}
+.ui-album .handler {
+  position: absolute;
+  top: 45%;
+  z-index: 10;
+  cursor: pointer;
+  font-size: 30px;
+}
+.ui-album .prev {
+  left: 35px;
+}
+.ui-album .next {
+  right: 275px;
+}
+.ui-album .box {
+  position: relative;
+}
+.ui-album .box-main {
+  position: relative;
+  overflow: hidden;
+  border: 10px solid #fff;
+  background-color: #fff;
+}
+.ui-album .box-aside {
+  position: absolute;
+  width: 230px;
+  top: 0;
+  right: 0;
+  background-color: #F5F5F5;
+  overflow-y: auto;
+}
+.ui-album .box-aside .aside-wrap {
+  padding: 10px;
+}
+.ui-album .box-aside .head {
+  line-height: 38px;
+  font-size: 14px;
+  border-bottom: 1px solid #E0E0E0;
+}
+.ui-album .box-aside .head .num {
+  font-size: 16px;
+  font-weight: 700;
+  padding-right: 10px;
+}
+.ui-album .box-aside .desc {
+  line-height: 2em;
+  padding-top: 8px;
+}

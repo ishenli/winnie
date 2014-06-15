@@ -18,8 +18,13 @@
             <h3 class="ui-box-title">Dialog test</h3>
         </div>
         <div class="ui-box-container ui-box-content">
-            <div class="ui-btn uib-btn-blue j-dialog-show" id="createDialog">show dialog</div>
+            <div class="ui-btn uib-btn-blue j-dialog-show" id="createDialog">dialog</div>
+            <div class="ui-btn uib-btn-blue" id="domDialog"> dialog with dom</div>
+            <div class="ui-btn uib-btn-blue" id="htmlDialog"> dialog with html</div>
         </div>
+    </div>
+    <div class="fn-hide">
+        <div id="domContent">hi,i am a dom content</div>
     </div>
     <div class="ui-dialog fn-hide" id="j-dialog">
         <a href="javascript:;" class="ui-dialog-close j-dialog-close" >x</a>
@@ -27,17 +32,32 @@
             a text content
         </div>
     </div>
+    <div class="ui-dialog fn-hide" id="j-dialog2">
+        <a href="javascript:;" class="ui-dialog-close j-dialog-close" >x</a>
+        <div class="ui-dialog-content" data-role="content"></div>
+    </div>
+    <div class="ui-dialog fn-hide" id="j-dialog3">
+        <a href="javascript:;" class="ui-dialog-close j-dialog-close" >x</a>
+        <div class="ui-dialog-content" data-role="content"></div>
+    </div>
     <script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/1-6-10/esl.js"></script>
     <script>
         require.config({
             baseUrl: '../../src',
             paths: {
-                winne:'winne/asset',
+                winnie:'.',
                 underscore:'../dep/underscore/underscore'
+            },
+            packages:[
+            {
+                'name': 'etpl',
+                'location': '../dep/etpl/src',
+                'main': 'main'
             }
+        ]
         });
 
-        require(['Dialog','lib'], function (Dialog,lib) {
+        require(['widget/Dialog','lib'], function (Dialog,lib) {
 
             var dialog = new Dialog({
                 element:'j-dialog',
@@ -46,6 +66,22 @@
                 width:'500px'
             });
 
+            var dialogDom = new Dialog({
+                element:'j-dialog2',
+                trigger:'#domDialog',
+                height:'200px',
+                width:'700px',
+                content:'#domContent'
+            });
+
+            //传入html标签
+            var dialogHhtml = new Dialog({
+                element:'j-dialog3',
+                trigger:'#htmlDialog',
+                height:'200px',
+                width:'700px',
+                content:'<div style="background:#ffff00;padding:20px;">i am html!!!!</div>'
+            });
         });
     </script>
 

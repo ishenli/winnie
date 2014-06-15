@@ -10,7 +10,6 @@ define(function (require) {
 
     var lib = {};
 
-    lib.dom = {};
     /**
      * 获取元素
      * @param id 元素ID || dom元素
@@ -29,6 +28,9 @@ define(function (require) {
      * @returns {Node}
      */
     lib.query = function (selector, el) {
+        if (!selector) {
+            return null;
+        }
         el = el || document;
         return el.querySelector(selector);
     };
@@ -40,6 +42,10 @@ define(function (require) {
      * @returns {NodeList}
      */
     lib.queryAll = function (selector, el) {
+
+        if (!selector) {
+            return null;
+        }
         el = el || document;
         return el.querySelectorAll(selector);
     };
@@ -91,60 +97,126 @@ define(function (require) {
     };
 
     /**
-     * 将目标元素添加到基准元素之后
-     *
-     * @param {HTMLElement} element 被添加的目标元素
-     * @param {HTMLElement} reference 基准元素
+     * 将目标元素添加
+     * @param {HTMLElement} el 被添加的目标元素
+     * @param {HTMLElement|String} stuff 添加的目标元素或字符串
      * @return {HTMLElement} 被添加的目标元素
      */
-    lib.insertAfter = function (element, reference) {
-        var parent = reference.parentNode;
 
-        if (parent) {
-            parent.insertBefore(element, reference.nextSibling);
+    //插入到元素内部
+    lib.append = function (el,stuff) {
+        return lib.insert(el, stuff, "beforeEnd");
+    };
+
+    lib.prepend = function (el,stuff) {
+        return lib.insert(el, stuff, "afterBegin");
+    };
+
+    lib.before = function (el,stuff) {
+        return lib.insert(el, stuff, "beforeBegin");
+    };
+
+    //插入到元素同级
+    lib.after = function (el,stuff) {
+        return lib.insert(el, stuff, "afterEnd");
+    };
+
+    /**
+     * 插入元素
+     * @param el
+     * @param stuff
+     * @param where
+     * @returns {*}
+     * 以下元素的innerHTML在IE中是只读的，调用insertAdjacentElement进行插入就会出错
+     * col, colgroup, frameset, html, head, style,
+     * title,table, tbody, tfoot, thead, 与tr;
+     * http://www.cnblogs.com/rubylouvre/archive/2009/12/14/1622631.html
+     * https://developer.mozilla.org/zh-CN/docs/Web/API/Element.insertAdjacentHTML
+     */
+    lib.insert = function (el, stuff, where) {
+        var doc = el.ownerElement || document;
+        var frag = document.createDocumentFragment();
+
+        if (stuff.version) { //如果是dom节点,则把它里面的元素节点移到文档碎片中
+            stuff.forEach(function (el) {
+                frag.appendChild(el);
+            });
+            stuff = frag;
         }
-        return element;
-    };
 
-    /**
-     * 将目标元素添加到基准元素之前
-     *
-     * @param {HTMLElement} element 被添加的目标元素
-     * @param {HTMLElement} reference 基准元素
-     * @return {HTMLElement} 被添加的目标元素
-     */
-    lib.insertBefore = function (element, reference) {
-        var parent = reference.parentNode;
+        //供火狐与IE部分元素调用
+        lib._insertAdjacentElement = function (el, node, where) {
+            switch (where) {
+                case 'beforeBegin':
+                    el.parentNode.insertBefore(node, el)
+                    break;
+                case 'afterBegin':
+                    el.insertBefore(node, el.firstChild);
+                    break;
+                case 'beforeEnd':
+                    el.appendChild(node);
+                    break;
+                case 'afterEnd':
+                    if (el.nextSibling) el.parentNode.insertBefore(node, el.nextSibling);
+                    else el.parentNode.appendChild(node);
+                    break;
+            }
+        };
 
-        if (parent) {
-            parent.insertBefore(element, reference);
+        lib._insertAdjacentHTML = function (el, htmlStr, where) {
+            var range = doc.createRange();
+            switch (where) {
+                case "beforeBegin"://before
+                    range.setStartBefore(el);
+                    break;
+                case "afterBegin"://after
+                    range.selectNodeContents(el);
+                    range.collapse(true);
+                    break;
+                case "beforeEnd"://append
+                    range.selectNodeContents(el);
+                    range.collapse(false);
+                    break;
+                case "afterEnd"://prepend
+                    range.setStartsAfter(el);
+                    break;
+            }
+            var parsedHTML = range.createContextualFragment(htmlStr);
+            lib._insertAdjacentElement(el, parsedHTML, where);
+        };
+
+        //如果是节点则复制一份
+//        stuff = stuff.nodeType ? stuff.cloneNode(true) : stuff;
+
+        if (el.insertAdjacentHTML) {//ie,chrome,opera,safari都已实现insertAdjactentXXX家族
+            el['insertAdjacent' + (stuff.nodeType ? 'Element' : 'HTML')](where, stuff);
+        } else {
+            //火狐专用
+            lib['_insertAdjacent' + (stuff.nodeType ? 'Element' : 'HTML')](el, stuff, where);
         }
 
-        return element;
-    };
-    /**
-     * 判断是否表单元素
-     * @param element
-     * @returns {boolean}
-     */
-    lib.isInput = function (element) {
-        var nodeName = element.nodeName.toLowerCase();
-
-        return nodeName === 'input'
-            || nodeName === 'select'
-            || nodeName === 'textarea';
+        return el;
     };
 
     /**
-     * 判断元素时候为某个标签元素
-     * @param element
-     * @param tagName
-     * @returns {boolean}
+     * 包裹dom节点
+     * @param wrapEle
+     * @param innerEles
      */
-    lib.isTagElement = function (element, tagName) {
-        return element.tagName.toLowerCase() === tagName;
-    };
+    lib.wrap = function(wrapEle,innerEles) {
+        if(!innerEles.length) { //是一个元素
+            innerEles = [innerEles];
+        }
 
+        for(var i =0;i<innerEles.length;i++) {
+            var item = innerEles[i].cloneNode(true);
+            wrapEle.appendChild(item);
+        }
+
+        var parentNode = innerEles[0].parentNode;
+        parentNode.innerHTML = '';
+        parentNode.appendChild(wrapEle);
+    };
     /**
      * 判断一个元素是否包含另一个元素
      * @param container 包含的元素
@@ -276,7 +348,7 @@ define(function (require) {
     /**
      * 获取目标元素符合条件的最近的祖先元素
      *
-     * @method module:lib.dom.getAncestorBy
+     * @method module:lib.getAncestorBy
      * @param {(HTMLElement | string)} element 目标元素
      * @param {Function} condition 判断祖先元素条件的函数，function (element)
      * @param {?string} arg
@@ -296,7 +368,7 @@ define(function (require) {
     /**
      * 获取目标元素指定元素className最近的祖先元素
      *
-     * @method module:lib.dom.getAncestorByClass
+     * @method module:lib.getAncestorByClass
      * @param {(HTMLElement | string)} element 目标元素或目标元素的id
      * @param {string} className 祖先元素的class，只支持单个class
      *
@@ -320,6 +392,16 @@ define(function (require) {
         }
 
         return walk(element, 'nextSibling', 'firstChild', hasClass, all);
+    };
+
+
+    /**
+     * 元素是否在文档结构中
+     * @param element
+     * @returns {boolean|*|Boolean}
+     */
+    lib.isInDocument = function(element) {
+        return lib.contains(document.documentElement,element);
     };
 
 

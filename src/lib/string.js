@@ -2,7 +2,7 @@
  * @file string 辅助
  * @author shenli
  */
-define(function (require) {
+define(function () {
 
     var toString = Object.prototype.toString;
 
@@ -50,6 +50,7 @@ define(function (require) {
      * 去掉字符串两边的空白
      */
     lib.trim = (function () {
+        //正则可以参考 https://www.imququ.com/post/bom-and-javascript-trim.html
         var whitespace = /^[\s\xa0\u3000]+|[\u3000\xa0\s]+$/g;
 
         return function (str, triment) {
@@ -65,6 +66,69 @@ define(function (require) {
      */
     lib.isString=function(val) {
         return toString.call(val) === '[object String]';
+    };
+
+
+    /**
+     * 重复字符串，n为重复次数，该方法在n特别大的情况有性能损失
+     * @param target
+     * @param n
+     * @returns {string}
+     */
+    lib.repeat = function(target,n) {
+        return (n <= 0) ? '' : target.concat(repeat(target, --n));
+    };
+
+    /**
+     * 获取字符串长度，unicode编码大于255，len补加1
+     * @param target
+     * @returns {*}
+     */
+    lib.byteLen = function(target) {
+        var len = target.length, i = 0;
+        for(;i<target.length;i++) {
+            if(target.charCodeAt(i) > 255) {
+                return len;
+            }
+        }
+
+        return len;
+    };
+
+    /**
+     * 截断，默认30个字符
+     * @param target
+     * @param length
+     * @param truncation
+     * @returns {string}
+     */
+    lib.truncate = function(target,length,truncation) {
+        length = length || 30;
+        truncation = truncation === void(0) ? '...' : truncation;
+        return target > length
+            ? target.slice(0, length - truncation.length) + truncation
+            : String(target);
+
+    };
+
+    lib.stripTags = function(target) {
+        return String(target || '').replace(/<[^>]+>/g, '');
+    };
+
+    lib.escapeHTML = function(target) {
+        return target.replace(/&/g, '&amp;')
+            .replace(/</g, '&lt')
+            .replace(/>/g, '&gt')
+            .replace(/"/g, '&quot')
+            .replace(/'/g, '&#39;');
+    };
+
+    lib.unescapeHTML = function(target) {
+        return target.replace(/&amp;/, '&')
+            .replace(/&lt/g, '<')
+            .replace(/&gt/g, '>')
+            .replace(/&quot/g, '"')
+            .replace(/&#39;/g, "'");
     };
     return lib;
 });
