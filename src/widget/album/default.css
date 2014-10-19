@@ -19,24 +19,26 @@
   left: 35px;
 }
 .ui-album .next {
-  right: 275px;
+  right: 375px;
 }
 .ui-album .box {
   position: relative;
+  background-color: #191919;
 }
 .ui-album .box-main {
   position: relative;
   overflow: hidden;
-  border: 10px solid #fff;
-  background-color: #fff;
 }
 .ui-album .box-aside {
   position: absolute;
-  width: 230px;
+  width: 330px;
   top: 0;
   right: 0;
   background-color: #F5F5F5;
   overflow-y: auto;
+}
+.ui-album .iconfont{
+    color: #fff;
 }
 .ui-album .box-aside .aside-wrap {
   padding: 10px;

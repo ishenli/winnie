@@ -3,17 +3,17 @@
  * @author ishenli
  * from https://github.com/aralejs/base/edit/master/src/aspect.js
  */
-define(function() {
+define(function () {
 
     var exports = {};
 
-    exports.before = function(methodName, callback, context) {
+    exports.before = function (methodName, callback, context) {
         return weave.call(this, 'before', methodName, callback, context);
     };
 
 
 // 在指定方法执行后，再执行 callback
-    exports.after = function(methodName, callback, context) {
+    exports.after = function (methodName, callback, context) {
         return weave.call(this, 'after', methodName, callback, context);
     };
 
@@ -25,7 +25,8 @@ define(function() {
 
     function weave(when, methodName, callback, context) {
         var names = methodName.split(eventSplitter);
-        var name, method;
+        var name;
+        var method;
 
         while (name = names.shift()) {
             method = getMethod(this, name);
@@ -51,12 +52,14 @@ define(function() {
     function wrap(methodName) {
         var old = this[methodName];
 
-        this[methodName] = function() {
+        this[methodName] = function () {
             var args = Array.prototype.slice.call(arguments);
             var beforeArgs = ['before:' + methodName].concat(args);
 
             // prevent if emit return false
-            if (this.emit.apply(this, beforeArgs) === false) return;
+            if (this.emit.apply(this, beforeArgs) === false) {
+                return;
+            }
 
             var ret = old.apply(this, arguments);
             var afterArgs = ['after:' + methodName, ret].concat(args);

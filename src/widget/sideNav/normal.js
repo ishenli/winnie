@@ -1,35 +1,33 @@
 /**
  * @file sideNav normal动画效果
- * @author ishenli （meshenli@gmail.com）
+ * @author ishenli （shenli03@baidu.com）
  */
-define(function (require) {
-
-    var lib = require('winnie/lib');
+define(function () {
 
     var resetCss = {
-        'display' : 'block'
+        'display': 'block'
     };
 
-    var hideCss ={
-        'display' : 'none'
+    var hideCss = {
+        'display': 'none'
     };
 
     var showCss = {
-        'display' : 'block'
+        'display': 'block'
 
     };
     var Normal = {
         show: function (ctx) {
 
-            lib.setStyle(ctx.navNodeWrap, showCss);
+            ctx.navNodeWrap.css(showCss);
 
         },
-        reset:function(ctx) {
-            lib.setStyle(ctx.navNodeWrap, resetCss);
+        reset: function (ctx) {
+            ctx.navNodeWrap.css(resetCss);
 
         },
-        hide:function(ctx) {
-            lib.setStyle(ctx.navNodeWrap, hideCss);
+        hide: function (ctx) {
+            ctx.navNodeWrap.css(hideCss);
 
         }
     };

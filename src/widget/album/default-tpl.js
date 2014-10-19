@@ -1,3 +1,25 @@
-;define(function() { 
-    return '<div class=\"${classPrefix}\"><a href=\"javascript:;\" class=\"${classPrefix}-close j-dialog-close\" >x</a><div class=\"${classPrefix}-content ui-album\"><div class=\"handlers\"><span class=\"prev handler\"><i class=\"iconfont iconfont-prev\"></i></span><span class=\"next handler\"><i class=\"iconfont iconfont-next\"></i></span></div><div class=\"j-album-content\" data-role=\"content\"></div></div></div><!--target:content--><div class=\"box\"><div class=\"box-main\" style=\"height:${viewHeight}px;width:${viewWidth}px;margin-right: ${marginRight}px;\"><img src=\"${img}\" alt=\"#\" class=\"j-img\" style=\"display: none\"></div><div class=\"box-aside\" style=\"height: ${asideHeight}px;\"><div class=\"aside-wrap\"><div class=\"head\"><em class=\"j-num num\">${index}/${len}</em>查看图片[<a href=\"#fullscreen\" class=\"fullScreen\">查看全屏</a>]</div><p class=\"j-desc desc\">${description}</p></div></div></div>';
+define(['handlebars'], function(Handlebars) {
+
+return Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  var buffer = "", stack1, functionType="function", escapeExpression=this.escapeExpression;
+
+
+  buffer += "<div class=\"";
+  if (stack1 = helpers.classPrefix) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
+  else { stack1 = (depth0 && depth0.classPrefix); stack1 = typeof stack1 === functionType ? stack1.call(depth0, {hash:{},data:data}) : stack1; }
+  buffer += escapeExpression(stack1)
+    + "\">\n    <a href=\"javascript:;\" class=\"";
+  if (stack1 = helpers.classPrefix) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
+  else { stack1 = (depth0 && depth0.classPrefix); stack1 = typeof stack1 === functionType ? stack1.call(depth0, {hash:{},data:data}) : stack1; }
+  buffer += escapeExpression(stack1)
+    + "-close j-dialog-close\">x</a>\n    <div class=\"";
+  if (stack1 = helpers.classPrefix) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
+  else { stack1 = (depth0 && depth0.classPrefix); stack1 = typeof stack1 === functionType ? stack1.call(depth0, {hash:{},data:data}) : stack1; }
+  buffer += escapeExpression(stack1)
+    + "-content ui-album\">\n        <div class=\"handlers\">\n            <span class=\"prev handler\"><i class=\"iconfont\">&#xf016e;</i></span>\n            <span class=\"next handler\"><i class=\"iconfont\">&#x359e;</i></span>\n        </div>\n        <div class=\"j-album-content\" data-role=\"content\">\n\n        </div>\n    </div>\n</div>";
+  return buffer;
+  })
+
 });

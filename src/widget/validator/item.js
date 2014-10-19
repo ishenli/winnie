@@ -3,7 +3,7 @@
  */
 define(function (require) {
 
-    var Widget = require('../Widget');
+    var Widget = require('.');
     var lib = require('winnie/lib');
     var u = require('underscore');
 

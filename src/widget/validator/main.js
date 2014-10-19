@@ -4,7 +4,7 @@
  */
 define(function (require) {
 
-    var Widget = require('../Widget');
+    var Widget = require('.');
     var u = require('underscore');
     var lib = require('winnie/lib');
     var Item = require('./item');

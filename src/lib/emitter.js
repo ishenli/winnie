@@ -1,6 +1,6 @@
 /**
- * @file 事件发射器，观察者模式实现
- * @author shenli （meshenli@gmail.com）
+ * @file 事件发射器
+ * @author shenli （shenli03@baidu03.com）
  */
 define(function () {
 
@@ -34,15 +34,17 @@ define(function () {
     };
     /**
      * 挂载事件
-     * @param events
-     * @param listener
-     * @param context
+     * @param {string} events
+     * @param {function} listener
+     * @param {Object} context
      * @returns {Emitter}
      */
     proto.on = function (events, listener, context) {
         var eventsList = this._getEvents();
         var maxListeners = this._getMaxListeners();
-        var list, event, currentListeners;
+        var list;
+        var event;
+        var currentListeners;
         if (!listener) {
             return this;
         }
@@ -51,14 +53,14 @@ define(function () {
 
         while (event = events.shift()) {
 
-            //获取某个事件的集合
+            //  获取某个事件的集合
             list = eventsList[event] || (eventsList[event] = []);
 
             currentListeners = list.length;
 
             if (currentListeners >= maxListeners && maxListeners !== 0) {
                 throw new RangeError(
-                        'Warning: possible Emitter memory leak detected. '
+                    'Warning: possible Emitter memory leak detected. '
                         + currentListeners
                         + ' listeners added.'
                 );
@@ -72,9 +74,9 @@ define(function () {
 
     /**
      * 挂载只执行一次的事件
-     * @param events
-     * @param listener
-     * @param context
+     * @param {string} events
+     * @param {function} listener
+     * @param {Object} context
      * @returns {Emitter}
      */
     proto.once = function (events, listener, context) {
@@ -89,26 +91,35 @@ define(function () {
 
     };
 
+    /**
+     * 注销事件
+     * @param {string} events
+     * @param {function} listener
+     * @param {Object} context
+     * @returns {Emitter}
+     */
     proto.un = proto.off = function (events, listener, context) {
-        var event, i, list;
+        var event;
+        var i;
+        var list;
         var cache = this._getEvents();
 
-        //一个事件也没有
+        // 一个事件也没有
         if (!cache) {
             return this;
         }
 
-        //off所有事件
+        // off所有事件
         if (arguments.length === 0) {
             delete  this._events;
             return this;
         }
 
-        //获取所有的事件名称
+        // 获取所有的事件名称
         events = events ? events.split(eventSplitter) : keys(cache);
 
         while (event = events.shift()) {
-            //获取某个事件名下的listeners集合
+            // 获取某个事件名下的listeners集合
             list = cache[event];
 
 
@@ -116,13 +127,13 @@ define(function () {
                 continue;
             }
 
-            //删除某个事件名下的所有事件
+            // 删除某个事件名下的所有事件
             if (!(listener || context)) {
                 delete  cache[event];
                 continue;
             }
 
-            //一个事件名下有多个事件
+            // 一个事件名下有多个事件
             for (i = list.length - 2; i >= 0; i -= 2) {
                 if (!(listener && list[i] !== listener
                     || context && list[i + 1] !== context)) {
@@ -137,8 +148,13 @@ define(function () {
 
     proto.fire = proto.emit = function (events) {
         var cache;
-        var rest = [];//参数数组
-        var event, all, list, i, returned = true;
+        var rest = [];// 参数数组
+        var event;
+        var all;
+        var len;
+        var list;
+        var i;
+        var returned = true;
         if (!(cache = this._events)) {
             return this;
         }
@@ -157,11 +173,11 @@ define(function () {
                 list = list.slice();
             }
 
-            //执行事件，all除外
+            // 执行事件，all除外
             if (event !== 'all') {
                 returned = emitEvents(list, rest, this) && returned;
             }
-            //执行事件'all'
+            // 执行事件'all'
             returned = emitEvents(all, [event].concat(rest), this) && returned;
 
         }
@@ -170,7 +186,11 @@ define(function () {
     };
 
 
-    //helpers
+    // helpers
+    /**
+     * 兼容keys
+     * @type {Function}
+     */
     var keys = Object.keys ? Object.keys : function (list) {
         var result = [];
         for (var name in list) {
@@ -181,23 +201,50 @@ define(function () {
         return name;
     };
 
+    /**
+     * 每个list都是一个listener和context两两排列
+     * @param list
+     * @param args
+     * @param context
+     * @returns {boolean}
+     */
     function emitEvents(list, args, context) {
         var pass = true;
 
         if (list) {
             var i = 0, l = list.length, a1 = args[0], a2 = args[1], a3 = args[2];
-            // call is faster than apply, optimize less than 3 argu
-            // http://blog.csdn.net/zhengyinhui100/article/details/7837127
+            //  call is faster than apply, optimize less than 3 args
+            //  http:// blog.csdn.net/zhengyinhui100/article/details/7837127
             switch (args.length) {
-                case 0: for (; i < l; i += 2) {pass = list[i].call(list[i + 1] || context) !== false && pass} break;
-                case 1: for (; i < l; i += 2) {pass = list[i].call(list[i + 1] || context, a1) !== false && pass} break;
-                case 2: for (; i < l; i += 2) {pass = list[i].call(list[i + 1] || context, a1, a2) !== false && pass} break;
-                case 3: for (; i < l; i += 2) {pass = list[i].call(list[i + 1] || context, a1, a2, a3) !== false && pass} break;
-                default: for (; i < l; i += 2) {pass = list[i].apply(list[i + 1] || context, args) !== false && pass} break;
+                case 0:
+                    for (; i < l; i += 2) {
+                        pass = list[i].call(list[i + 1] || context) !== false && pass;
+                    }
+                    break;
+                case 1:
+                    for (; i < l; i += 2) {
+                        pass = list[i].call(list[i + 1] || context, a1) !== false && pass;
+                    }
+                    break;
+                case 2:
+                    for (; i < l; i += 2) {
+                        pass = list[i].call(list[i + 1] || context, a1, a2) !== false && pass;
+                    }
+                    break;
+                case 3:
+                    for (; i < l; i += 2) {
+                        pass = list[i].call(list[i + 1] || context, a1, a2, a3) !== false && pass;
+                    }
+                    break;
+                default:
+                    for (; i < l; i += 2) {
+                        pass = list[i].apply(list[i + 1] || context, args) !== false && pass;
+                    }
+                    break;
             }
         }
 
-        // 一个函数有错，就返回false
+        //  一个函数有错，就返回false
         return pass;
     }
 

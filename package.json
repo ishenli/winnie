@@ -55,6 +55,13 @@
         "karma-coverage": "~0.1.4",
         "grunt-autowrap": "~0.3.0",
         "grunt-contrib-jshint": "~0.8.0"
+    },
+    "edp": {
+        "wwwroot": "/",
+        "depDir": "dep",
+        "srcDir": "src",
+        "loaderAutoConfig": "js,htm,html,tpl,vm,phtml",
+        "loaderUrl": "http://s1.bdstatic.com/r/www/cache/ecom/esl/1-8-2/esl.js",
+        "dependencies": {}
     }
-
 }

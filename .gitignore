@@ -7,6 +7,8 @@ target/
 bin/
 node_modules/
 dep/
+component/
+asset/
 .DS_Store
 .metadata
 *.log

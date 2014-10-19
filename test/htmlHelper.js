@@ -3,7 +3,6 @@
  * @author shenli
  */
 define(function () {
-
     return {
         add: function (html){
             var div = document.createElement('div');

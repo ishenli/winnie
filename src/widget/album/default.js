@@ -1,6 +1,6 @@
 define(function (require) {
-    var lib = require('winnie/lib');
-    var Etpl = require('etpl');
+    var lib = require('../lib');
+    var handlebars = require('handlebars');
     var exports = {};
 
     /**
@@ -50,23 +50,23 @@ define(function (require) {
      */
     exports.renderImageTpl = function(target,index) {
         var el = this.get('imgList')[index];
-        var contentTpl = Etpl.getRenderer('content');
-
-        var viewWidth = lib.getSize(target).width;
-        var viewHeight = lib.getSize(target).height;
+        var viewWidth = target.width();
+        var viewHeight = target.height();
         var marginRight = this.get('contentStyle').marginRight;
+
         var data = {
-            viewHeight:viewHeight-20,//border
+            viewHeight:viewHeight,//border
             viewWidth:viewWidth-marginRight,
-            img:el.getAttribute(this.get('origin')),
+            img:$(el).attr(this.get('origin')),
             marginRight:marginRight,
             index:(index+1),
             asideHeight:viewHeight,
             len:this.get('len'),
-            description:el.getAttribute('data-desc')
+            description:$(el).attr('data-desc')
         };
 
-        target.innerHTML = contentTpl(data);
+        //拓展数据对象
+        target.html(this.get('imageTpl')(data));
     };
 
     exports._bindTheme = function() {
@@ -76,18 +76,16 @@ define(function (require) {
 
     exports.contentResize = function() {
 
-        var viewHeight = lib.getSize(this.contentBox).height;
-        var boxMain = lib.query('.box-main', this.element);
-        var boxAside = lib.query('.box-aside', this.element);
-
-        console.log('theme resize');
+        var viewHeight = this.contentBox.height();
+        var boxMain = this.element.find('.box-main');
+        var boxAside = this.element.find('.box-aside');
 
         if(boxMain) {
-            lib.setStyle(boxMain,{
-                height:viewHeight-20+'px'
+            boxMain.css({
+                height:viewHeight
             });
-            lib.setStyle(boxAside,{
-                height:viewHeight+'px'
+            boxAside.css({
+                height:viewHeight
             });
 
         }

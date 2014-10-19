@@ -16,11 +16,11 @@ requirejs.config({
     baseUrl: '/base/src',
 
     paths: {
-        winnie:'.',
+//        winnie:'.',
         underscore: '../dep/underscore/underscore',
-//        moye: '../dep/moye/src/ui',
         test: '../test',
-        etpl:'../dep/etpl/src/main'
+        etpl:'../dep/etpl/src/main',
+        jquery:'http://s1.bdstatic.com/r/www/cache/static/jquery/jquery-1.10.2.min_f2fb5194'
     },
 
     // ask Require.js to load these files (all our tests)
