@@ -19,7 +19,7 @@ module.exports = function (config) {
             {pattern: 'src/**/*.js', included: false},
             {pattern: 'test/**/*Helper.js', included: false},
             {pattern: 'test/**/utilSpec.js', included: false},
-//            {pattern: 'test/**/eventSpec.js', included: false},
+            {pattern: 'test/**/classSpec.js', included: false},
 //            {pattern: 'test/**/widgetSpec.js', included: false},
 //      {pattern: 'test/**/stringSpec.js', included: false},
 //      {pattern: 'test/**/dialogSpec.js', included: false},
