@@ -8,9 +8,11 @@ define(function (require) {
 
     var util = require('./base');
 
-    util.mix(util,{
+    var toString = Object.prototype.toString;
 
-        equals: function(a,b) {
+    util.mix(util, {
+
+        equals: function (a, b) {
             if (a === b) {
                 return true;
             }
@@ -44,18 +46,95 @@ define(function (require) {
          * @param {*} obj
          * @returns {boolean}
          */
-        isEmptyObject: function(obj) {
+        isEmptyObject: function (obj) {
             for (var p in obj) {
                 if (p !== undefined) {
                     return false
                 }
             }
             return true;
+        },
+        /**
+         * 获取对象的keys
+         * @param {Object} obj
+         */
+        keys: Object.keys || function(obj) {
+            var result = [];
+            var pro;
+//            var i;
+
+            for (pro in obj) {
+                if(obj.hasOwnProperty(pro)) {
+                    result.push(pro);
+                }
+            }
+
+            // ie有个枚举的bug
+            return result;
+        },
+        /**
+         * 遍历
+         * @param {Object} obj
+         * @param {Function} fn
+         * @param {*=} context
+         */
+        each: function (obj, fn, context) {
+            var length = obj && obj.length; // array含有length属性
+            var isObj = length === undefined || toString.call(obj) === '[object Function]';
+            context = context || null;
+            var keys;
+            var key;
+            var i = 0;
+            var val;
+            if (isObj) {
+                keys = util.keys(obj);
+                for (; i < keys.length; i++) {
+                    key = keys[i];
+                    if (fn.call(context, obj[key], key, obj) === false) {
+                        break;
+                    }
+                }
+            }
+            else {
+                for (val = obj[0];i < length;val = obj[++i]) {
+                    if (fn.call(context,val,i,obj) === false) {
+                        break;
+                    }
+                }
+            }
+
+            return obj;
+        },
+        /**
+         * 对象属性拷贝
+         *
+         * @param {Object} target 目标对象
+         * @param {...Object} source 源对象
+         * @return {Object}
+         */
+        extend: function (target, source) {
+            for ( var i = 1, len = arguments.length; i < len; i++ ) {
+                source = arguments[ i ];
+
+                if ( !source ) {
+                    continue;
+                }
+
+                for ( var key in source ) {
+                    if ( source.hasOwnProperty( key ) ) {
+                        target[ key ] = source[ key ];
+                    }
+                }
+
+            }
+
+            return target;
         }
     });
 
-    function compareObjects(a,b) {
+    function compareObjects(a, b) {
 
     }
+
     return util;
 });

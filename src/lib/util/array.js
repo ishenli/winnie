@@ -37,6 +37,37 @@ define(function (require) {
             },
         inArray: function (item,arr) {
             return util.indexOf(item, arr) > -1;
+        },
+
+        contains: function (arr,item) {
+            return util.indexOf(item, arr) > -1;
+        },
+        /**
+         * 判断一个是否是真是的数组对象
+         * @param {Object} obj
+         */
+        isArray:function (obj) {
+
+        },
+        /**
+         * 将类数组对象转换为真实的数组
+         * @param {Object|Array} obj
+         */
+        makeArray:function(obj) {
+            if (obj == null) {
+                return [];
+            }
+
+            if (util.isArray(obj)) {
+                return obj;
+            }
+
+            var ret = [];
+
+            for (var i = 0, l = obj.length; i < l; i++) {
+                ret[i] = obj[i];
+            }
+            return ret;
         }
     });
 

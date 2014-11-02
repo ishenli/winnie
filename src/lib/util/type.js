@@ -118,7 +118,7 @@ define(function (require) {
         })(types[i], i);
     }
 
-    util.isArray = Array.isArray || util.isArray;
+    util.isArray = Array.prototype.isArray || util.isArray;
 
     return util;
 });

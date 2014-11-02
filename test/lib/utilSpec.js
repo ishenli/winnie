@@ -160,5 +160,21 @@ define(function(require) {
             // Host
             expect(util.isPlainObject(host)).toEqual(false);
         });
+
+        it('util.each', function () {
+            var ret = 0;
+
+            util.each([1, 2, 3, 4, 5], function (num) {
+                ret += num;
+            });
+
+            expect(ret).toEqual(15);
+
+            // test context
+            util.each([1], function () {
+                expect(this).toEqual(host);
+            });
+        });
+
     });
 });
