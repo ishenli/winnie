@@ -16,11 +16,7 @@ define(function (require) {
      */
     exports.remove = function (element) {
 
-        if (!element) {
-            return;
-        }
-
-        element = util.isArray(element) ? element : [dom.g(element)];
+        element = dom.query(element);
 
 
         var parent;

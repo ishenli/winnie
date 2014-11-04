@@ -12,12 +12,21 @@ define(function (require) {
 
     var exports = {};
 
-    exports.hasClass = function (element, className) {
+    exports.hasClass = function (selector, className) {
 
-        element = dom.g(element); // 现在只能一个一个元素判断，后续添加集合操作
+        var ret = false;
         className = str2Array(className);
 
-        return (element.nodeType === dom.NodeType.ELEMENT_NODE && exports._hasClass(element, className));
+        dom.query(selector).each(function (element) {
+            if (element.nodeType === dom.NodeType.ELEMENT_NODE && exports._hasClass(element, className)) {
+                ret = true;
+                return false;
+            }
+
+            return undefined;
+        });
+
+        return ret;
     };
 
     exports._hasClass = function (element, classNames) {
@@ -35,6 +44,8 @@ define(function (require) {
             }
             return true;
         }
+
+        return false;
     };
 
     exports._addClass = createClassList('add');

@@ -100,7 +100,7 @@ define(function (require) {
             Dom.remove(Dom.queryAll('.' + wrapperCls));
         });
 
-        it('wrapInner should works', function () {
+        /*it('wrapInner should works', function () {
             var time = (+new Date());
             var wrappedCls = 'f' + time;
             var wrapperCls = 'x' + time;
@@ -135,7 +135,7 @@ define(function (require) {
             expect(foo.parentNode).not.toBe(document.body);
             Dom.remove(fc);
             Dom.remove(foo);
-        });
+        });*/
     });
 
 });

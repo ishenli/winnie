@@ -3,22 +3,25 @@
  * @author shenli
  */
 define(function (require) {
+
     var async = {};
-    var u = require('underscore');
+    var util = require('./util');
 
     async.each = function (arr, iterator, callback) {
-        callback = callback || function(){};
+        callback = callback || function () {
+        };
 
         if (!arr.length) {
             return callback();
         }
         var completed = 0;
 
-        _forEach(arr, function (val) {
+        util.each(arr, function (val) {
             iterator(val, function (err) {
                 if (err) {
                     callback(err);
-                    callback = function(){};
+                    callback = function () {
+                    };
                 }
                 else {
                     completed += 1;
@@ -38,7 +41,8 @@ define(function (require) {
      * @returns {*}
      */
     async.eachSeries = function (arr, iterator, callback) {
-        callback = callback || function(){};
+        callback = callback || function () {
+        };
         if (!arr.length) {
             return callback();
         }
@@ -48,7 +52,8 @@ define(function (require) {
             iterator(arr[completed], function (err) {
                 if (err) {
                     callback(err);
-                    callback = function(){};
+                    callback = function () {
+                    };
                 }
                 else {
                     completed += 1;
@@ -67,8 +72,8 @@ define(function (require) {
 
     var _asyncMap = function (eachFn, arr, iterator, callback) {
         var results = [];
-        arr = _map(arr, function (val, i) {
-            return { index: i, value: val };
+        arr = util.map(arr, function (val, i) {
+            return {index: i, value: val};
         });
 
         eachFn(arr, function (val, callback) {
@@ -102,7 +107,7 @@ define(function (require) {
     async.series = function (tasks, callback) {
         callback = callback || function () {
         };
-        if (u.isArray(tasks)) {
+        if (util.isArray(tasks)) {
             // https://github.com/caolan/async#mapSeries
             async.mapSeries(tasks, function (fn, callback) {
                 if (fn) {
@@ -118,7 +123,7 @@ define(function (require) {
         }
         else {
             var results = {};
-            async.eachSeries(_keys(tasks), function (key, callback) {
+            async.eachSeries(util.keys(tasks), function (key, callback) {
                 tasks[key](function (err) {
                     var args = Array.prototype.slice.call(arguments, 1);
                     if (args.length <= 1) {
@@ -133,38 +138,5 @@ define(function (require) {
         }
     };
 
-
-    var _forEach = function (arr, iterator) {
-        if (arr.forEach) {
-            return arr.forEach(iterator);
-        }
-        for (var i = 0; i < arr.length; i += 1) {
-            iterator(arr[i], i, arr);
-        }
-    };
-
-    var _map = function (arr, iterator) {
-        if (arr.map) {
-            return arr.map(iterator);
-        }
-        var results = [];
-        _forEach(arr, function (x, i, a) {
-            results.push(iterator(x, i, a));
-        });
-        return results;
-    };
-
-    var _keys = function (obj) {
-        if (Object.keys) {
-            return Object.keys(obj);
-        }
-        var keys = [];
-        for (var k in obj) {
-            if (obj.hasOwnProperty(k)) {
-                keys.push(k);
-            }
-        }
-        return keys;
-    };
     return async;
 });

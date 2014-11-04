@@ -20,20 +20,22 @@ define(function(require) {
 
         beforeEach(function () {
             $('body').append(tpl);
-            foo = dom.query('#foo-class');
-            a = dom.query('#foo-class a');
-            input = dom.query('#foo-class input');
-            radio = dom.query('#test-radio-class');
-            radio2 = dom.query('#test-radio2-class');
-            button = dom.query('#foo-class button');
-            label = dom.query('#foo-class label');
-            table = dom.query('#test-table');
-            td = dom.query('#test-table td');
-            select = dom.query('#test-select');
-            select2 = dom.query('#test-select2');
-            select3 = dom.query('#test-select3');
-            opt = dom.query('#test-opt');
-            div = dom.query('#test-div');
+            foo = dom.get('#foo-class');
+            a = dom.get('#foo-class a');
+            input = dom.get('#foo-class input');
+            radio = dom.get('#test-radio-class');
+            radio2 = dom.get('#test-radio2-class');
+            button = dom.get('#foo-class button');
+            label = dom.get('#foo-class label');
+            table = dom.get('#test-table');
+            td = dom.get('#test-table td');
+            select = dom.get('#test-select');
+            select2 = dom.get('#test-select2');
+            select3 = dom.get('#test-select3');
+            opt = dom.get('#test-opt');
+            div = dom.get('#test-div');
+            //opt2 = dom.query('#test-select option')[1];
+            //area = dom.get('#foo textarea');
         });
 
         afterEach(function () {
@@ -99,12 +101,12 @@ define(function(require) {
             a.className = 'link link2';
             dom.toggleClass(a, 'link2');
             expect(dom.hasClass(a, 'link2')).toBe(false);
-            //Dom.toggleClass(a, '.link2',false);
-            //expect(Dom.hasClass(a, 'link2')).to.be(false);
+            //dom.toggleClass(a, '.link2',false);
+            //expect(dom.hasClass(a, 'link2')).to.be(false);
             dom.toggleClass(a, '.link2');
             expect(dom.hasClass(a, 'link2')).toBe(true);
-            // Dom.toggleClass(a, '.link2',true);
-            // expect(Dom.hasClass(a, 'link2')).to.be(true);
+            // dom.toggleClass(a, '.link2',true);
+            // expect(dom.hasClass(a, 'link2')).to.be(true);
         });
     });
 });

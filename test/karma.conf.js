@@ -15,10 +15,11 @@ module.exports = function (config) {
         // list of files / patterns to load in the browser
         files: [
 //      'src/css/*.less',
-            'dep/underscore/underscore.js',
             {pattern: 'src/**/*.js', included: false},
+            {pattern: 'test/**/**/*.html', included: false},
             {pattern: 'test/**/*Helper.js', included: false},
-            {pattern: 'test/**/cookieSpec.js', included: false},
+            //{pattern: 'test/**/cookieSpec.js', included: false},
+            {pattern: 'test/**/dom/*Spec.js', included: false},
 //            {pattern: 'test/**/eventSpec.js', included: false},
 //            {pattern: 'test/**/widgetSpec.js', included: false},
 //      {pattern: 'test/**/stringSpec.js', included: false},

@@ -11,13 +11,48 @@ define(function (require) {
     var exports = {};
 
     var WINDOW = window;
+    var doc = document;
+
+    var docElem = doc.documentElement;
+    var push = Array.prototype.push;
+
+
+    // http://msdn.microsoft.com/en-us/library/ie/ms534635(v=vs.85).aspx
+    // https://developer.mozilla.org/en-US/docs/Web/API/Node.compareDocumentPosition
+    var compareNodeOrder = ('sourceIndex' in docElem) ? function (a, b) {
+        return a.sourceIndex - b.sourceIndex;
+    } : function (a, b) {
+        if (!a.compareDocumentPosition || !b.compareDocumentPosition) {
+            return a.compareDocumentPosition ? -1 : 1;
+        }
+        var bit = a.compareDocumentPosition(b) & 4;
+        return bit ? -1 : 1;
+    };
+
+
+    /**
+     *
+     * @param selector
+     * @param context
+     * @returns {*|null}
+     */
+
+    /**
+     * 返回单个元素
+     * @param {String|HTMLElement[]} selector
+     * @param {String|HTMLElement[]|HTMLDocument|HTMLElement|Window} [context] context under which to find elements matching selector.
+     * @return {HTMLElement} The first of found HTMLElements
+     */
+    exports.get = function (selector, context) {
+        return exports.query(selector, context)[0] || null;
+    };
 
     /**
      * 获取元素
      * @param {string|HTMLElement} id 元素ID || dom元素
      * @return {HTMLElement|null} 获取的元素，找不到时返回null
      */
-    exports.get = exports.g = function (id) {
+    exports.g = function (id) {
         if (!id) {
             return null;
         }
@@ -36,14 +71,90 @@ define(function (require) {
     };
 
     /**
-     * 查询元素，不兼容ie6/7
-     * @param selector
-     * @param el
+     * 查询元素
+     * @param {string|HTMLElement=} selector
+     * @param {HTMLElement|string} context
      * @returns {Node}
      */
-    exports.query = function (selector, el) {
-        el = el || document;
-        return el.querySelector(selector);
+    exports.query = function (selector, context) {
+        var i;
+        var ret;
+        var simpleContext;
+        var isSelectorString = typeof selector === 'string';
+        var contexts = context !== undefined
+            ? exports.query(context)
+            : (simpleContext = 1) && [doc];
+
+        var contextsLen = contexts.length;
+
+        if (!selector) {
+            ret = [];
+        }
+        else if (isSelectorString){
+
+            selector = util.trim(selector);
+
+            if (simpleContext) { // context为空
+                if (selector === 'body') {
+                    ret = [doc.body];
+                }else {
+
+                    // https://developer.mozilla.org/en-US/docs/Web/API/NodeList
+                    ret = util.makeArray(document.querySelectorAll(selector));
+                }
+            }
+
+            if (!ret) {
+                ret = [];
+                for (i= 0; i <contextsLen;i++) {
+                    // 利用apply的querySelectorAll返回的类数组插入到ret
+                    push.apply(ret, util.makeArray(contexts[i].querySelectorAll(selector)));
+                }
+
+                // 去重
+                if (contextsLen > 1 && ret.length > 1){
+                    exports.unique(ret);
+                }
+            }
+        }
+        else { // 传入dom元素
+
+            // query(document.getElementById('xx'))
+            if (selector.nodeType || util.isWindow(selector)) {
+                ret = [selector];
+            }
+            // var x=query('.l');
+            else if (util.isArray(selector)) {
+                ret = selector;
+            }
+            // query(document.getElementsByTagName('a');
+            else if (dom.isDomNodeList(selector)) {
+                ret = util.makeArray(selector);
+            }
+            else {
+                ret = [selector];
+            }
+
+            if (!simpleContext) {
+                var tmp = ret,
+                    ci,
+                    len = tmp.length;
+                ret = [];
+                for (i = 0; i < len; i++) {
+                    for (ci = 0; ci < contextsLen; ci++) {
+                        if (exports.contains(contexts[ci], tmp[i])) {
+                            ret.push(tmp[i]);
+                            break;
+                        }
+                    }
+                }
+            }
+
+        }
+
+        ret.each = queryEach;
+
+        return ret;
     };
 
     /**
@@ -89,6 +200,7 @@ define(function (require) {
             }
         }
     };
+
 
     /**
      * 获取document
@@ -219,6 +331,85 @@ define(function (require) {
         return walk(element, 'nextSibling', 'firstChild', hasClass, all);
     };
 
+
+    /**
+     * Sorts an array of Dom elements, in place, with the duplicates removed.
+     * Note that this only works on arrays of Dom elements, not strings or numbers.
+     * @param {HTMLElement[]} elements.
+     * @method
+     * @return {HTMLElement[]}
+     * @member dom
+     */
+    exports.unique = (function () {
+        var hasDuplicate,
+            baseHasDuplicate = true;
+
+        // Here we check if the JavaScript engine is using some sort of
+        // optimization where it does not always call our comparison
+        // function. If that is the case, discard the hasDuplicate value.
+        // Thus far that includes Google Chrome.
+        [0, 0].sort(function () {
+            baseHasDuplicate = false;
+            return 0;
+        });
+
+        function sortOrder(a, b) {
+            if (a === b) {
+                hasDuplicate = true;
+                return 0;
+            }
+
+            return compareNodeOrder(a, b);
+        }
+
+        // 排序去重
+        return function (elements) {
+
+            hasDuplicate = baseHasDuplicate;
+            elements.sort(sortOrder);
+
+            if (hasDuplicate) {
+                var i = 1, len = elements.length;
+                while (i < len) {
+                    if (elements[i] === elements[i - 1]) {
+                        elements.splice(i, 1);
+                        --len;
+                    }
+                    else {
+                        i++;
+                    }
+                }
+            }
+
+            return elements;
+        };
+    })();
+
+
+    /**
+     * 不叫dom节点是否相等
+     * @param {HTMLElement|HTMLElement[]} aNode
+     * @param {HTMLElement|HTMLElement[]} bNode
+     * @returns {boolean}
+     */
+    exports.equals = function(aNode, bNode) {
+
+        aNode = exports.query(aNode);
+        bNode = exports.query(bNode);
+
+        if (aNode.length !== bNode.length) {
+            return false;
+        }
+
+        for (var i = aNode.length; i >= 0; i--) {
+            if (aNode[i] !== aNode[i]) {
+                return false;
+            }
+        }
+        return true;
+
+
+    };
     /**
      * DOM 步进遍历
      *
@@ -246,5 +437,16 @@ define(function (require) {
         return (all) ? elements : null;
     }
 
+
+    function queryEach(f) {
+        var self = this,
+            l = self.length,
+            i;
+        for (i = 0; i < l; i++) {
+            if (f(self[i], i) === false) {
+                break;
+            }
+        }
+    }
     return exports;
 });
