@@ -8,11 +8,11 @@ define(function (require) {
         top_domain = current_domain.match(/\w+\.\w+$/);
         top_domain = top_domain && top_domain[0] ? top_domain[0] : null;
 
-    function cookie(name, value, hours, domain, path) {
+    function cookie(name, value, expire, domain, path) {
         var date, arr, reg;
 
         if (typeof name != 'string') {
-            return;
+            return null;
         } else if (undefined === value) {
             // get cookie
             value = null;
@@ -28,20 +28,29 @@ define(function (require) {
             cookie(name, '', -1);
         } else {
             // set cookie
-            date = new Date;
-            date.setTime(date.getTime() + (hours || 24) * 3600000);
+            if(expire instanceof Date){
+                //日期
+                date = expire;
+            }else{
+                //小时
+
+                date = new Date();
+                date.setTime(date.getTime() + (expire?expire:expire == 0?0:24) * 3600000);
+            }
+
+            var ret = name + '=' + escape(value) + ';expires=' + date.toGMTString();
 
             // 默认设置到顶级域名
             domain = undefined == domain ? top_domain ? '.' + top_domain : null : domain;
+            domain = domain?';domain=' + domain:null;
 
-            if (null == domain) {
-                // domain 为 null 时 不支持
-            } else {
-                domain = ';domain=' + domain;
-                path = undefined == path ? ';path=/' : ';path=' + path;
+            path = undefined == path ? null : ';path=' + path;
 
-                doc.cookie = name + '=' + escape(value) + ';expires=' + date.toGMTString() + domain + path;
-            }
+            domain?ret+=domain:0;
+            path?ret+=path:0;
+
+            doc.cookie =ret;
+
         }
     }
 
@@ -53,16 +62,16 @@ define(function (require) {
         cookie(name,null);
     }
 
-    function setcookie(name,value,hours,domain,path){
-        cookie(name,value,hours,domain,path);
+    function setcookie(name,value,expire,domain,path){
+        cookie(name,value,expire,domain,path);
     }
 
     return {
-        getcookie:getcookie,
+        get:getcookie,
 
-        setcookie:setcookie,
+        set:setcookie,
 
-        delcookie:delcookie
+        remove:delcookie
 
     };
 });

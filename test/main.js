@@ -16,7 +16,7 @@ requirejs.config({
     baseUrl: '/base/src',
 
     paths: {
-//        winnie:'.',
+        winnie:'.',
         underscore: '../dep/underscore/underscore',
         test: '../test',
         etpl:'../dep/etpl/src/main',
