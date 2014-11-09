@@ -51,6 +51,17 @@ define(function (require) {
             }
 
             return doc.defaultView || doc.parentWindow;
+        },
+        /**
+         * 判断元素是否在document中
+         * @param {HTMLElement} ele
+         * @returns {boolean}
+         */
+        isInDocument:function(ele) {
+            if (!ele) {
+                return false;
+            }
+            return dom.contains(document, ele);
         }
     };
 

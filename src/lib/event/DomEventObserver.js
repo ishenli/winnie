@@ -5,7 +5,7 @@
 define(function (require) {
 
     var util = require('../util');
-    var slice  = Array.prototype.slice;
+    var slice = Array.prototype.slice;
     var features = require('./features');
     var isW3c = features.isW3c;
     var eventSupport = features.eventSupport;
@@ -26,7 +26,7 @@ define(function (require) {
      * @param {boolean} root
      * @constructor
      */
-    var DomEventObserver = function (element, type, handler, original, namespaces, args, root,context) {
+    var DomEventObserver = function (element, type, handler, original, namespaces, args, root, context) {
         var isNative;
         // 是否是浏览器原生事件，元素中是否有 addEventListener或attachEvent
         this.isNative = isNative = nativeEvents[type] && !!element[eventSupport];
@@ -39,7 +39,7 @@ define(function (require) {
         this[eventSupport] = !!this.target[eventSupport];
         this.root = root;
         this.context = context;
-
+        this.delegateSelector = handler._delegate && handler._delegate.selector;
         // 事件执行函数,如果是浏览器原生事件会传入event对象
         // this.handler.call(element, event);
         this.handler = wrappedHandler(element, handler, null, args, context);
@@ -78,6 +78,20 @@ define(function (require) {
     };
 
 
+    /**
+     * 判断传入的selector 是否与 实体的selector相互匹配
+     * @param selector
+     * @returns {boolean}
+     */
+    DomEventObserver.prototype.isDelegated = function(selector) {
+        if (selector === '**' || !this.delegateSelector) {
+            return true;
+        }
+        return this.delegateSelector == selector;
+    };
+
+
+
     function wrappedHandler(element, fn, condition, args, context) {
 
         context = context || element;
@@ -91,7 +105,7 @@ define(function (require) {
             else {
                 execArgs = eargs;
             }
-//                var execArgs =  args ? slice.call(eargs, event ? 0 : 1).concat(args) : eargs;
+                //var execArgs =  args ? slice.call(eargs, event ? 0 : 1).concat(args) : eargs;
             return fn.apply(context, execArgs);
 
         };
@@ -108,6 +122,7 @@ define(function (require) {
             }
             return call(event, arguments);
         };
+
 
         handler._delegate = fn._delegate;
 

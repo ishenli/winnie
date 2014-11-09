@@ -230,6 +230,7 @@ define(function (require) {
         else {
             this.originalEvent.cancelBubble = true;
         }
+        this.isStopPropagation = true;
     };
 
     Event.prototype.stop = function () {

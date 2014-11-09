@@ -31,7 +31,7 @@ define(function (require) {
     var rootListener = function (event, type) {
         // 拿到listener
         // this 为element
-        var listeners = domEventObservable.get(this, type, null, false);
+        var listeners = domEventObservable.get(this, type || event.type, null, false);
         var len = listeners.length;
         var i = 0;
 
@@ -72,7 +72,7 @@ define(function (require) {
      * @param fn
      * @param context
      */
-    function on(element, events, selector, fn,context) {
+    function on(element, events, selector, fn, context) {
         var type;
         var originalFn;
         var args; // 传入的参数
@@ -165,23 +165,39 @@ define(function (require) {
         var findTarget = function (target, root) {
             var i;
             var array = typeof  selector === 'string'
-                ? dom.queryAll(selector, root)
+                ? dom.query(selector, root)
                 : selector;
 
+            var ret = [];
+            // 考虑委托的节点为父子节点的情况，这样一次点击会触发多次的函数调用
             for (; target && target !== root; target = target.parentNode) {
                 for (i = array.length; i--;) {
                     if (array[i] === target) {
-                        return target;
+                        //return target;
+                        ret.push(target);
+                        break;
                     }
                 }
             }
 
+            return ret;
+
         };
+
 
         var handler = function (e) {
             var match = findTarget(e.target, this);
-            if (match) {
-                fun.apply(match, arguments);
+
+            if (match.length) {
+
+                for (var i= 0,len = match.length; i <len;i++) {
+                    e.currentTarget = match[i];
+                    arguments[0] = e;
+                    fun.apply(match[i], arguments);
+                    if (e.isStopPropagation) {
+                        break;
+                    }
+                }
             }
         };
 
@@ -193,14 +209,23 @@ define(function (require) {
         return handler;
     }
 
-    var removeListener = function (element, orgType, handler, namespaces) {
+    /**
+     * 删除注册的handler
+     * @param element
+     * @param orgType
+     * @param handler
+     * @param namespaces
+     * @param selector
+     */
+    var removeListener = function (element, orgType, handler, namespaces,selector) {
         var type = orgType && orgType.replace(NAME_REG, '');
-        var listeners = domEventObservable.get(element, type, null, false);
+        var listeners = domEventObservable.get(element, type, handler, false);
         var removed = {};
 
         for (var i = 0, len = listeners.length; i < len; i++) {
-            if ((!handler || listeners[i].original === handler) // 判断函数是否是orginal
+            if ((!handler || listeners[i].original === handler) // 判断函数是否是original
                 && listeners[i].inNamespaces(namespaces)
+                && listeners[i].isDelegated(selector)
             ) {
                 domEventObservable.del(listeners[i]);
 
@@ -228,13 +253,21 @@ define(function (require) {
      * 事件移除
      * @param {HTMLElement} element
      * @param {string} types
+     * @param {string} selector
      * @param {Function} fn
      * @returns {*}
      */
-    function off(element, types, fn) {
+    function off(element, types, selector, fn) {
         var isTypeStr = util.isString(types);
         var namespaces;
         var type;
+
+        // off(element,'click',fn)
+        if (selector && util.isFunction(selector)) {
+            fn = selector;
+            selector = null;
+        }
+
         /**
          * off(element,'click mouseover')
          */
@@ -251,13 +284,24 @@ define(function (require) {
         if (!types || isTypeStr) {
             /**
              * off(element)
-             * off(element ,'.a')
+             * off(element ,'click.a')
+             * off(element ,'click','selector')
+             * off(element ,'click', fn)
              * off(element ,'.a.b')
              */
             if (namespaces = isTypeStr && types.replace(NAMESPACE_REG, '')) {
-                namespaces = util.strToArray(namespaces, '.');
+                namespaces = util.strToArray(namespaces, '.'); // return ['ns1','ns2']
+                if (namespaces.length) { // 如果有命名空间，没有传入selector,则注销所有的事件
+                    selector = selector || '**';
+                }
             }
-            removeListener(element, type, null, namespaces);
+
+            if (util.isFunction(fn)) {
+                removeListener(element, type, fn, namespaces, selector);
+            }
+            else {
+                removeListener(element, type, null, namespaces, selector);
+            }
         }
         else if (util.isFunction(types)) {
             // off(element,fn)
@@ -268,23 +312,34 @@ define(function (require) {
     }
 
     /**
+     * 注销委托的事件
+     * @param element
+     * @param types
+     * @param selector
+     * @param fn
+     */
+    function undelegate(element, types, selector, fn) {
+
+    }
+
+    /**
      * 触发事件，要区分W3C和IE事件
      * @type {Function}
      */
     var fireListener = features.isW3c
         ? function (element, type, isNative) {
-            /**
-             * 标准浏览器支持
-             * @see https://developer.mozilla.org/en-US/docs/Web/API/EventTarget.dispatchEvent
-             * @type {Event}
-             */
-            var evt = document.createEvent('HTMLEvents');
-            evt.initEvent(type, true, true, win, 1);
-            element.dispatchEvent(evt);
-        }
+        /**
+         * 标准浏览器支持
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/EventTarget.dispatchEvent
+         * @type {Event}
+         */
+        var evt = document.createEvent('HTMLEvents');
+        evt.initEvent(type, true, true, win, 1);
+        element.dispatchEvent(evt);
+    }
         : function (element, type) {
 
-        };
+    };
 
     /**
      *
@@ -326,15 +381,12 @@ define(function (require) {
     }
 
 
-
-
     return {
         on: on,
 //        add: add,
         once: once,
         one: once,
         off: off,
-        un: off,
         remove: off,
         detach: off,
 //        clone: clone,

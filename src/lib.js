@@ -4,20 +4,15 @@
  */
 define(function (require) {
 
-    var u = require('underscore');
+    var util = require('./lib/util');
+
 
     var lib = {};
 
-    u.extend(
+    util.extend(
         lib,
-        require('./lib/string'),
-        require('./lib/lang'),
-        require('./component/dom'),
-        require('./component/domify'),
-        require('./component/attribute'),
-        require('./component/style'),
-        require('./component/event-debug'),
-        require('./component/page')
+        require('./lib/dom'),
+        require('./lib/event')
     );
 
     return lib;

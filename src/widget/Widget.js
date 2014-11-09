@@ -3,8 +3,8 @@
  * @author shenli
  */
 define(function (require) {
-    var u = require('underscore');
     var lib = require('../lib');
+    var util = require('../lib/util');
     var Control = require('./Control');
     var EVENT_KEY_SPLITTER = /^(\S+)\s*(.*)$/;
     var DELEGATE_EVENT_NAMESPACE = '.delegate-event-';
@@ -16,8 +16,7 @@ define(function (require) {
     /**
      * @constructor
      * @extends module:Control
-     * @requires lib
-     * @requires jQuery
+     * @requires util
      * @requires Control
      * @exports Widget
      * @example
@@ -69,7 +68,7 @@ define(function (require) {
             // 删除节点
             if (this.element) {
 //                this.element.off();
-                lib.removeNode(this.element);
+                lib.remove(this.element);
             }
 
             this.element = null;
@@ -112,7 +111,7 @@ define(function (require) {
 
             // 用户传入dom元素或者id
             if (element) {
-                this.element = lib.g(element);
+                this.element = lib.get(element);
             }
             // 从模板中拿
             else if (this.get('template')) {
@@ -129,7 +128,7 @@ define(function (require) {
          * @public
          */
         parseElementFromTemplate: function () {
-            this.element = lib.domify(this.get('template'));
+            this.element = lib.create(this.get('template'));
         },
 
         /**
@@ -177,7 +176,7 @@ define(function (require) {
                     }
                 }
 
-                //注册事件
+                // 注册事件
                 (function (fn) {
                     host.on('change:' + option, function (val, prev, key) {
                         host[fn](val, prev, key);
@@ -246,7 +245,7 @@ define(function (require) {
             }
 
             // 讲事件和函数转换为统一的events对象格式
-            if (lib.isString(events) && u.isFunction(callback)) {
+            if (util.isString(events) && util.isFunction(callback)) {
                 var obj = {};
                 obj[events] = callback;
                 events = obj;
@@ -264,7 +263,7 @@ define(function (require) {
 
                 (function (callback, instance) {
                     var handler = function (ev) {
-                        if (u.isFunction(callback)) {
+                        if (util.isFunction(callback)) {
                             callback.call(instance, ev);
                         }
                         else {
@@ -275,10 +274,10 @@ define(function (require) {
                     };
 
                     if (selector) {
-                        lib.on(element,eventType, selector, handler);
+                        lib.on(element, eventType, selector, handler);
                     }
                     else {
-                        lib.on(element ,eventType, handler);
+                        lib.on(element, eventType, handler);
                     }
 
                 }(events[key], this));
@@ -309,7 +308,7 @@ define(function (require) {
             // undelegateEvents();
             if (arguments.length === 0) {
                 var type = DELEGATE_EVENT_NAMESPACE + this.wid;
-                this.element && lib.off(this.element,type);
+                this.element && lib.off(this.element, type);
 
                 // 卸载所有外部传入的 element
                 if (this._delegateElements) {
@@ -317,7 +316,7 @@ define(function (require) {
                         if (!this._delegateElements.hasOwnProperty(de)) {
                             continue;
                         }
-                        this._delegateElements[de].off(type)
+                        lib.off(this._delegateElements[de], type);
                     }
                 }
             }
@@ -327,10 +326,10 @@ define(function (require) {
 
                 // 卸载this.element
                 if (!element) {
-                    this.element && lib.off(this.element,eventsObj.type, eventsObj.selector);
+                    this.element && lib.off(this.element, eventsObj.type, eventsObj.selector);
                 }
                 else {
-                    lib.off(element,eventsObj.type, eventsObj.selector);
+                    lib.off(element, eventsObj.type, eventsObj.selector);
                 }
 
             }
@@ -349,14 +348,15 @@ define(function (require) {
 
             var wid = this.wid;
             // element与实例关联
-            this.element.attr(DATA_WIDGET_WID, wid);
+            this.element.setAttribute(DATA_WIDGET_WID, wid);
+
             cachedInstances[wid] = this;
         }
 
     });
 
     // For memory leak
-    lib.on(window,'unload',function () {
+    lib.on(window, 'unload', function () {
         for (var wid in cachedInstances) {
             cachedInstances[wid].dispose();
         }
@@ -377,8 +377,8 @@ define(function (require) {
      * @returns {boolean|*}
      */
     function isEmptyOption(o) {
-        return o == null || (lib.isString(o) || u.isArray(o)) && o.length === 0
-            || u.isEmpty(o);
+        return o == null || (util.isString(o) || util.isArray(o)) && o.length === 0
+            || util.isEmptyObject(o);
     }
 
     /**
@@ -407,7 +407,7 @@ define(function (require) {
      * @returns events 实例的events
      */
     function getEventsFromInstance(instance) {
-        if (u.isFunction(instance.events)) {
+        if (util.isFunction(instance.events)) {
             instance.events = instance.events();
         }
         return instance.events;

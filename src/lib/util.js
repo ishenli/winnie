@@ -9,8 +9,9 @@ define(function (require) {
     require('./util/object');
     require('./util/string');
     require('./util/web');
+    require('./util/function');
 
     var util = require('./util/base');
-    util.version = '0.0.1';
+    util.version = '0.1.0';
     return util;
 });

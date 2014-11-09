@@ -83,7 +83,24 @@ define(function (require) {
                 }
             }
             return array;
-        }
+        },
+        map:AP.map ?
+            function (arr, fn, context) {
+                return AP.map.call(arr, fn, context || this);
+            } :
+            function (arr, fn, context) {
+                var len = arr.length,
+                    res = new Array(len);
+                for (var i = 0; i < len; i++) {
+                    var el = typeof arr === 'string' ? arr.charAt(i) : arr[i];
+                    if (el ||
+                            //ie<9 in invalid when typeof arr == string
+                        i in arr) {
+                        res[i] = fn.call(context || this, el, i, arr);
+                    }
+                }
+                return res;
+            }
     });
 
     return util;

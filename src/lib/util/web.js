@@ -1,5 +1,5 @@
 /**
- * @file string
+ * @file type
  * @author shenli （meshenli@gmail.com）
  */
 define(function (require) {

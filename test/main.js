@@ -19,8 +19,10 @@ requirejs.config({
         winnie:'.',
         underscore: '../dep/underscore/underscore',
         test: '../test',
+        htmlHelper: '../test/htmlHelper',
         etpl:'../dep/etpl/src/main',
         async:'../dep/async/lib/async',
+        bean:'../dep/bean/bean',
         jquery:'http://s1.bdstatic.com/r/www/cache/static/jquery/jquery-1.10.2.min_f2fb5194'
     },
 

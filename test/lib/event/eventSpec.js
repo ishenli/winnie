@@ -3,12 +3,11 @@
  * @author shenli （meshenli@gmail.com）
  */
 define(function (require) {
-    var DomEvent = require('lib/event/domEvent');
+    var DomEvent = require('lib/event');
     var util = require('lib/util');
     var dom = require('lib/dom');
     var Dom = require('lib/dom');
     var $ = require('jquery');
-    var async = require('async');
     var tpl = '';
 
     function isFunction(v) {
@@ -60,11 +59,9 @@ define(function (require) {
                 // click a
                 result = [];
                 simulate(a, 'click');
-                setTimeout(function () {
-                    expect(result.join(SEP)).toEqual([FIRST, SECOND].join(SEP));
-                    DomEvent.off(a);
-                    done();
-                }, 0);
+                expect(result.join(SEP)).toEqual([FIRST, SECOND].join(SEP));
+                DomEvent.off(a);
+                done();
             });
         });
 
@@ -78,10 +75,13 @@ define(function (require) {
                     result = HAPPENED;
                 }
 
+                //$(f).on('click', foo);
+                //$(f).on('click', foo);
+                //$(f).off('click', foo);
                 DomEvent.on(f, 'click', foo);
-
+                //
                 DomEvent.on(f, 'click', foo);
-
+                //
                 DomEvent.off(f, 'click', foo);
 
                 // click f
@@ -180,10 +180,8 @@ define(function (require) {
                 simulate(doc, 'click');
                 simulate(doc, 'click');
 
-                setTimeout(function () {
-                    expect(result[1]).not.toEqual(result[2]);
-                    done();
-                }, 10);
+                expect(result[1]).not.toEqual(result[2]);
+                done();
             });
 
         });

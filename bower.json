@@ -12,6 +12,7 @@
     ],
     "devDependencies": {
         "underscore": "~1.6.0",
-        "lacus" : "https://github.com/ishenli/lacus.git"
+        "lacus" : "https://github.com/ishenli/lacus.git",
+        "bean" : "https://github.com/fat/bean.git"
     }
 }

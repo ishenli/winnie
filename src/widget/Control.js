@@ -3,8 +3,7 @@
  * @author shenli
  */
 define(function (require) {
-    var u = require('underscore');
-    var lib = require('../lib');
+    var util = require('../lib/util');
     var Class = require('../lib/class');
     var Aspect = require('../lib/aspect');
     var Emitter = require('../lib/emitter');
@@ -76,7 +75,7 @@ define(function (require) {
             var options = [];
 
             // set('sfs',val);
-            if (lib.isString(key)) {
+            if (util.isString(key)) {
                 options[key] = val;
 
                 // set({key:'va'l,key2:'val2'},config);
@@ -116,7 +115,7 @@ define(function (require) {
 
                 // 如果设置了overide为true，表示强制覆盖，就不去merge
                 // 都是对象的时候，做merge操作，来保留先前option上没有的值
-                if (!override && lib.isPlainObject(prev) && lib.isPlainObject(val)) {
+                if (!override && util.isPlainObject(prev) && util.isPlainObject(val)) {
                     val = merge(merge({}, prev), val);
                 }
 
@@ -149,7 +148,7 @@ define(function (require) {
                 }
             }
 
-            this.dispose = u.noop;
+            this.dispose = util.noop;
         },
         /**
          * 调用每个属性的change方法
@@ -192,7 +191,7 @@ define(function (require) {
             // 将options中的个别配置放到实例上
             copySpecialOptions(specialOptions, proto.options, proto);
 
-            if (!u.isEmpty(proto.options)) {
+            if (!util.isEmptyObject(proto.options)) {
                 inherited.unshift(proto.options);
             }
 
@@ -275,7 +274,7 @@ define(function (require) {
         for (var key in options) {
             var option = options[key];
             if (!isUserValue
-                && lib.isPlainObject(option)
+                && util.isPlainObject(option)
                 && hasOwnProperties(option, OPTION_SPECIAL_VALUES)) {
                 newOptions[key] = option;
                 continue;
@@ -348,11 +347,11 @@ define(function (require) {
      * @param {string} prev 继承的值
      */
     function cloneValue(value, prev) {
-        if (u.isArray(value)) {
+        if (util.isArray(value)) {
             value = value.slice();
         }
-        else if (lib.isPlainObject(value)) {
-            lib.isPlainObject(prev) || (prev = {});
+        else if (util.isPlainObject(value)) {
+            util.isPlainObject(prev) || (prev = {});
 
             value = merge(prev, value);
         }
@@ -398,7 +397,6 @@ define(function (require) {
         }
 
         if (isEmptyOption(a) && isEmptyOption(b)) {
-            console.log('is Empty');
             return true;
         }
 
@@ -426,7 +424,7 @@ define(function (require) {
                     && aString === bString;
         }
 
-        if (lib.isPlainObject(a) && lib.isPlainObject(b)) {
+        if (util.isPlainObject(a) && util.isPlainObject(b)) {
             if (!isEqual(lib.keys(a), lib.keys(b))) {
                 return false;
             }
@@ -447,7 +445,7 @@ define(function (require) {
      */
     function isEmptyOption(o) {
         return o == null  // null,undefined
-            || (lib.isString(o) || u.isArray(o)) && o.length === 0 //'',[]
+            || (util.isString(o) || util.isArray(o)) && o.length === 0 //'',[]
             || isEmptyObject(o); // {}
     }
 
@@ -468,7 +466,7 @@ define(function (require) {
      */
     function isEmptyObject(o) {
         if(!o || toString.call(o) !== '[object Object]' // {}
-            ||o.nodeType || lib.isWindow(o) || !o.hasOwnProperty){
+            ||o.nodeType || util.isWindow(o) || !o.hasOwnProperty){
             return false;
         }
 

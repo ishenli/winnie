@@ -1,6 +1,5 @@
 /**
- * @file array
- * array utilities of lang
+ * @file object
  * @ignore
  * @author shenli （meshenli@gmail.com）
  */

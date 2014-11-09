@@ -31,17 +31,10 @@ define(function (require) {
 
 
     /**
-     *
-     * @param selector
-     * @param context
-     * @returns {*|null}
-     */
-
-    /**
      * 返回单个元素
      * @param {String|HTMLElement[]} selector
-     * @param {String|HTMLElement[]|HTMLDocument|HTMLElement|Window} [context] context under which to find elements matching selector.
-     * @return {HTMLElement} The first of found HTMLElements
+     * @param {String|HTMLElement[]|HTMLDocument|HTMLElement|Window} [context] 查找的context
+     * @return {HTMLElement} 查找到的元素数组的首个元素
      */
     exports.get = function (selector, context) {
         return exports.query(selector, context)[0] || null;
@@ -254,8 +247,8 @@ define(function (require) {
      * @returns {boolean|*|Boolean}
      */
     exports.contains = function (container, contained) {
-        container = exports.g(container);
-        contained = exports.g(contained);
+        container = exports.get(container);
+        contained = exports.get(contained);
 
         return container.contains
             ? container !== contained && container.contains(contained)

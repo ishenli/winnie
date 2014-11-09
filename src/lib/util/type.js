@@ -1,9 +1,7 @@
 /**
- * @file array
- * array utilities of lang
+ * @file type
  * @ignore
  * @author shenli （meshenli@gmail.com）
- * http://www.w3schools.com/jsref/jsref_obj_array.asp
  */
 define(function (require) {
 

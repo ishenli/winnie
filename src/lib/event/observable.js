@@ -2,7 +2,7 @@
  * @file observable
  * @author ishenli （meshenli@gmail.com）
  */
-define(function (require) {
+define(function () {
 
     /**
      * 存储Observer
