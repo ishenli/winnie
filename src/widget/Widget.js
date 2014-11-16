@@ -65,9 +65,10 @@ define(function (require) {
             this.undelegateEvents();
 
             delete cachedInstances[this.wid];
+
             // 删除节点
             if (this.element) {
-//                this.element.off();
+                lib.off(this.element);
                 lib.remove(this.element);
             }
 

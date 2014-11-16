@@ -1,14 +1,14 @@
 /**
  * @file 定位工具，将一个 DOM 节点相对于另一个 DOM 节点进行定位操作
- * @author shenli(sheli03@baidu.com）
+ * @author shenli(meshenli@gmail.com）
  */
 define(function (require) {
 
     var VIEWPORT = { _id: 'VIEWPORT', nodeType: 1 };
     var Position = {};
     var isPosFixed = false; // 是否fixed
-    var isIE6 = (window.navigator.userAgent || '').toLowerCase().indexOf('mise 6') !== -1;
-    var $ = require('jquery');
+    var lib = require('../lib');
+
 
     /**
      * @constructor
@@ -32,11 +32,11 @@ define(function (require) {
         target = normalize(target);
         base = normalize(base);
 
-        var pinElement = $(target.element);
+        var pinElement = target.element;
         //  设定目标元素的 position 为绝对定位
         //  若元素的初始 position 不为 absolute，会影响元素的 display、宽高等属性
-        if (pinElement.css('position') !== 'fixed' || isIE6) {
-            pinElement.css({
+        if (lib.getStyle(pinElement,'position') !== 'fixed') {
+            lib.setStyle(pinElement,{
                 position: 'absolute'
             });
 
@@ -59,7 +59,7 @@ define(function (require) {
         var top = baseOffset.top + base.y - target.y - parentOffset.top;
         var left = baseOffset.left + base.x - target.x - parentOffset.left;
 
-        pinElement.css({
+        lib.setStyle(pinElement,{
             left: left,
             top: top
         });
@@ -87,7 +87,7 @@ define(function (require) {
      */
     function normalize(posObj) {
 
-        posObj = $(posObj)[0] || {};
+        posObj = lib.get(posObj) || {};
 
         if (posObj.nodeType) {
             posObj = {
@@ -95,7 +95,7 @@ define(function (require) {
             };
         }
 
-        var element = $(posObj.element)[0] || VIEWPORT;
+        var element = lib.get(posObj.element) || VIEWPORT;
 
         if (element.nodeType !== 1) {
             throw  new Error('posObj.element is invalid.');
@@ -118,21 +118,21 @@ define(function (require) {
             }
             else if (isVIEWPORT) {
                 return {
-                    top: $(document).scrollTop(),
-                    left: $(document).scrollLeft()
+                    top: lib.getScrollTop(),
+                    left: lib.getScrollLeft()
                 };
             }
             else {
-                return $(element).offset();
+                return lib.getPosition(element);
             }
         };
 
         // 计算图形尺寸
         result.size = function () {
-            var el = isVIEWPORT ? $(window) : $(element);
+            var el = isVIEWPORT ? lib.get(window) : lib.get(element);
             return {
-                width: el.outerWidth(),
-                height: el.outerHeight()
+                width: lib.outerWidth(el),
+                height: lib.outerHeight(el)
             };
         };
 
@@ -181,30 +181,32 @@ define(function (require) {
      * @param {Object} element
      */
     function getParentOffset(element) {
-        var parent = element.offsetParent();
-
-        if (parent[0] === document.documentElement) {
-            parent = $(document.body);
+        // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement.offsetParent
+        if (lib.getStyle(element, 'position') === 'fixed') {
+            return {
+                top:numberize(lib.getStyle(element,'border-top-width')),
+                left:numberize(lib.getStyle(element,'border-left-width'))
+            }
         }
+        var parent = element.offsetParent;
 
-        if (isIE6) {
-            parent.css({
-                zoom: 1
-            });
+        if (parent === document.documentElement) {
+            parent = document.body;
         }
 
         var offset;
+
         if (parent === document.body
-            && parent.css('position') === 'static') {
+            && lib.getStyle(parent, 'position') === 'static') {
             offset = { top: 0, left: 0 };
         }
         else {
-            offset = parent.offset();
+            offset = lib.getPosition(parent);
         }
 
         //  根据基准元素 offsetParent 的 border 宽度，来修正 offsetParent 的基准位置
-        offset.top += numberize(parent.css('border-top-width'));
-        offset.left += numberize(parent.css('border-left-width'));
+        offset.top += numberize(lib.getStyle(parent,'border-top-width'));
+        offset.left += numberize(lib.getStyle(parent,'border-left-width'));
 
 
         return offset;

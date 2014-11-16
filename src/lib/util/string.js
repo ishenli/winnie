@@ -71,6 +71,13 @@ define(function (require) {
          */
         strToArray: function(str, d) {
             return str.split(d || ' ');
+        },
+        /**
+         * 首字母大写
+         * @param {string} str
+         */
+        ucFirst:function(str) {
+            return str.charAt(0).toUpperCase() + str.substring(1);
         }
     })
 });
