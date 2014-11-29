@@ -5,15 +5,11 @@
 define(function (require) {
 
     var Overlay = require('./Overlay');
-    var ua = (window.navigator.userAgent || '').toLowerCase();
-    var isIE6 = ua.indexOf('msie 6') !== -1;
-    var $body = document.body;
-    var $doc = document;
-
+    var lib = require('../lib');
+    var util = require('../lib/util');
     /**
     * @constructor
     * @extends module:Overlay
-    * @requires jQuery
     * @exports Mask
     */
     var Mask = Overlay.extend({
@@ -30,20 +26,20 @@ define(function (require) {
          */
         options: {
             //  统一样式前缀
-            classPrefix: 'mp-mask',
-            width: isIE6 ? $doc.outerWidth(true) : '100%',
-            height: isIE6 ? $doc.outerHeight(true) : '100%',
+            classPrefix: 'ui-mask',
+            width:  '100%',
+            height:  '100%',
             opacity: 0.8,
             backgroundColor: '#000',
             style: {
-                position: isIE6 ? 'absolute' : 'fixed',
+                position: 'fixed',
                 top: 0,
                 left: 0,
                 zIndex: 30
             },
             // 默认定位
             align: {
-                baseElement: isIE6 ? $body : undefined
+                baseElement: undefined
             }
         },
         /**
@@ -51,13 +47,13 @@ define(function (require) {
          */
         show: function () {
             Mask.superClass.show.call(this);
-            var css = $.extend({
+            var css = util.extend({
                     opacity: this.get('opacity'),
                     backgroundColor: this.get('backgroundColor')
                 },
                 this.get('style')
             );
-            this.element.css(css);
+            lib.css(this.element, css);
         }
     });
 
