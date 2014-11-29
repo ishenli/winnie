@@ -36,6 +36,16 @@ define(
         cssProps['float'] = 'cssFloat';
 
         /**
+         * css,习惯jQuery的api
+         * @param {HTMLElement[]|String|HTMLElement} selector
+         * @param {Object|string} styles
+         * @param {string=} value
+         */
+        exports.css = function(selector, styles, value) {
+            value ? exports.setStyle(selector, styles, value) : exports.getStyle(selector, styles);
+        };
+
+        /**
          * 设置样式
          * @param {HTMLElement[]|String|HTMLElement} selector 选择器或节点或节点数组
          * @param {Object|string} styles 样式名字或者样式值map
@@ -171,6 +181,16 @@ define(
             }
         };
 
+        /**
+         * 判断可见
+         * @param {HTMLElement[]|String|HTMLElement} selector 选择器或节点或节点数组
+         */
+        exports.isShow = function (selector) {
+            var el = dom.get(selector);
+            var bound = el.getBoundingClientRect();
+            return !!(bound.bottom - bound.top) && !!(bound.right - bound.left);
+        };
+
 
         /*
          * 给页面中添加样式
@@ -209,22 +229,6 @@ define(
 
         };
 
-        /**
-         * 获取或者设置元素的内容宽度
-         * @param {HTMLElement} ele dom元素
-         * @param {string|number} cssValue 样式值
-         */
-        exports.width = function (ele, cssValue) {
-            if (!cssValue) {
-                getWidthAndHeight(ele, 'width');
-            }
-            else {
-                exports.setStyle({
-                    width: cssValue
-                });
-            }
-        };
-
         util.each(['width', 'height'], function (name) {
             exports['outer' + util.ucFirst(name)] = function (selector, includeMargin) {
                 var el = dom.get(selector);
@@ -234,6 +238,24 @@ define(
             exports['inner' + util.ucFirst(name)] = function (selector) {
                 var el = dom.get(selector);
                 return el && getWHIgnoreDisplay(el, name, PADDING_BOX);
+            };
+
+            var which = name === WIDTH ? ['Left', 'Right'] : ['Top', 'Bottom'];
+
+            exports[name] = function (selector, val) {
+                var elem = dom.get(selector);
+                if (val !== undefined) {
+                    if (elem) {
+                        var computedStyle = getComputedStyle(elem);
+                        var isBorderBox = isBorderBoxFn(elem, computedStyle);
+                        if (isBorderBox) {
+                            val += getPBMWidth(elem, ['padding', 'border'], which, computedStyle);
+                        }
+                        return dom.setStyle(elem, name, val);
+                    }
+                    return undefined;
+                }
+                return elem && getWHIgnoreDisplay(elem, name, CONTENT_BOX);
             };
         });
         /**

@@ -7,8 +7,8 @@ define(function (require) {
     var Overlay = require('./Overlay');
     var ua = (window.navigator.userAgent || '').toLowerCase();
     var isIE6 = ua.indexOf('msie 6') !== -1;
-    var $body = $(document.body);
-    var $doc = $(document);
+    var $body = document.body;
+    var $doc = document;
 
     /**
     * @constructor

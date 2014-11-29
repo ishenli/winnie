@@ -175,14 +175,15 @@ define(function (require) {
                     if (!isEmptyOption(val)) {
                         this[fn](val, undefined, option);
                     }
+
+                    // 注册事件
+                    (function (fn) {
+                        host.on('change:' + option, function (val, prev, key) {
+                            host[fn](val, prev, key);
+                        });
+                    }(fn));
                 }
 
-                // 注册事件
-                (function (fn) {
-                    host.on('change:' + option, function (val, prev, key) {
-                        host[fn](val, prev, key);
-                    });
-                }(fn));
             }
 
         },
@@ -354,7 +355,6 @@ define(function (require) {
             cachedInstances[wid] = this;
         },
         _onRenderId: function(val) {
-            console.log('renderId');
             this.element.setAttribute('id', val)
         },
 

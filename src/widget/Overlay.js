@@ -6,8 +6,10 @@
 define(function (require) {
 
     var lib = require('../lib');
+    var util = require('../lib/util');
     var Widget = require('./Widget');
     var Position = require('./Position');
+    var WIN = window;
 
     /**
      * @constructor
@@ -56,9 +58,6 @@ define(function (require) {
                 this.render();
             }
             this.set('visible', true);
-            // 重新计算定位
-            this._setPosition();
-
             return this;
         },
         /**
@@ -80,16 +79,16 @@ define(function (require) {
 
             this.after('render', function () {
 
-                this.element.css({
+                lib.setStyle(this.element, {
                     width: this.get('width'),
                     height: this.get('height'),
                     zIndex: this.get('zIndex')
                 });
 
                 // 首先将元素hide
-                var position = this.element.css('position');
+                var position = lib.getStyle(this.element, 'position');
                 if (position === 'static' || position === 'relative') {
-                    this.element.css({
+                    lib.setStyle(this.element,{
                         position: 'absolute',
                         left: '-9999px',
                         top: '-9999px'
@@ -106,8 +105,10 @@ define(function (require) {
          * 销毁
          */
         dispose: function () {
-            lib.earse(this, Overlay.allOverlays);
-            return Overlay.superclass.dispose.call(this);
+            // 销毁两个静态数组中的实例
+            util.erase(this, Overlay.allOverlays);
+            util.erase(this, Overlay.blurOverlays);
+            return Overlay.superClass.dispose.call(this);
         },
 
         /**
@@ -119,7 +120,7 @@ define(function (require) {
          */
         _setPosition: function (align) {
 
-            if (!lib.isInDocument(this.element[0])) {
+            if (!lib.isInDocument(this.element)) {
                 return;
             }
 
@@ -129,12 +130,12 @@ define(function (require) {
             }
 
             // 如果起先是隐藏的
-            var isHidden = this.element.css('display') === 'none';
+            var isHidden = lib.getStyle(this.element, 'display') === 'none';
 
 
             if (isHidden) {
                 // 放入文档流中，但不可见
-                this.element.css({
+                lib.setStyle(this.element,{
                     visibility: 'hidden',
                     display: 'block'
                 });
@@ -153,7 +154,7 @@ define(function (require) {
 
             // 重新可见
             if (isHidden) {
-                this.element.css({
+                lib.setStyle(this.element,{
                     visibility: 'visible'
                 });
             }
@@ -169,13 +170,31 @@ define(function (require) {
          * @private
          */
         _onRenderVisible:function(val) {
-            this.element[val ? 'show' :'hide']();
+            lib[val ? 'show' :'hide'](this.element);
+        },
+
+        // 用于 set 属性后的界面更新
+        _onRenderWidth: function (val) {
+           lib.css(this.element, 'width', val);
+        },
+
+        _onRenderHeight: function (val) {
+           lib.css(this.element, 'height', val);
+        },
+
+        _onRenderZIndex: function (val) {
+           lib.css(this.element, 'zIndex', val);
+        },
+
+        _onRenderAlign: function (val) {
+            this._setPosition(val);
         },
         /**
          * arr 元素数组，表示点击到这些元素上浮层不消失,需要手动调用
          * @param {HTMLElement[]} arr 元素数组
          */
         blurHide: function (arr) {
+            arr = util.makeArray(arr);
             arr.push(this.element);
             this._relativeElements = arr;
             Overlay.blurOverlays.push(this);
@@ -186,26 +205,26 @@ define(function (require) {
     // 存放浮层的实例
     Overlay.blurOverlays = [];
 
-    $(document).on('click', function (e) {
+    lib.on(document,'click', function (e) {
         hideBlurOverlays(e);
     });
 
 
     // window resize 重新计算浮层
-    var winHeight = $(window).height();
-    var winWidth = $(window).width();
+    var winHeight = lib.height(WIN);
+    var winWidth = lib.width(WIN);
 
     Overlay.allOverlays = [];
 
     /**
      * 重新绘制函数resize
      */
-    var resizeFun = lib.debounce(function () {
-        var winNewHeight = $(window).height();
-        var winNewWidth = $(window).width();
+    var resizeFun = util.debounce(function () {
+        var winNewHeight = lib.height(WIN);
+        var winNewWidth = lib.width(WIN);
 
         if (winNewHeight !== winHeight || winNewWidth !== winWidth) {
-            $.each(Overlay.allOverlays, function (i, item) {
+            util.each(Overlay.allOverlays, function (item, i) {
                 if (!item || !item.get('visible')) {
                     return;
                 }
@@ -216,7 +235,7 @@ define(function (require) {
         winHeight = winNewHeight;
     }, 200);
 
-    $(window).on('resize', resizeFun);
+    lib.on(window ,'resize', resizeFun);
 
 
     /**
@@ -225,7 +244,7 @@ define(function (require) {
      */
     function hideBlurOverlays(e) {
         // blurOverlays 存放的浮层的实例
-        $.each(Overlay.blurOverlays, function (index, item) {
+        util.each(Overlay.blurOverlays, function (item, index) {
             //  当实例为空或隐藏时，不处理
             if (!item || !item.get('visible')) {
                 return;
@@ -233,7 +252,7 @@ define(function (require) {
             //  遍历 _relativeElements ，当点击的元素落在这些元素上时，不处理,如关闭的按钮
             for (var i = 0; i < item._relativeElements.length; i++) {
                 var el = item._relativeElements[i];
-                if (el === e.target || $.contains(el, e.target)) {
+                if (el === e.target || lib.contains(el, e.target)) {
                     return;
                 }
             }

@@ -35,6 +35,11 @@ define(function (require) {
             }
             return -1;
         },
+        /**
+         * 判断一个是否是真是的数组对象
+         * @param {*} item
+         * @param {Object} arr
+         */
         inArray: function (item, arr) {
             return util.indexOf(item, arr) > -1;
         },
@@ -42,13 +47,7 @@ define(function (require) {
         contains: function (arr, item) {
             return util.indexOf(item, arr) > -1;
         },
-        /**
-         * 判断一个是否是真是的数组对象
-         * @param {Object} obj
-         */
-        isArray: function (obj) {
 
-        },
         /**
          * 将类数组对象转换为真实的数组
          * @param {Object|Array} obj
@@ -68,7 +67,8 @@ define(function (require) {
                 ret[i] = obj[i];
             }
             return ret;
-        },
+        }
+        ,
         /**
          * 从数组中删除对应元素
          * @param {Object} target
@@ -83,8 +83,9 @@ define(function (require) {
                 }
             }
             return array;
-        },
-        map:AP.map ?
+        }
+        ,
+        map: AP.map ?
             function (arr, fn, context) {
                 return AP.map.call(arr, fn, context || this);
             } :
@@ -104,4 +105,5 @@ define(function (require) {
     });
 
     return util;
-});
+})
+;

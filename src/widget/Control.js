@@ -425,7 +425,7 @@ define(function (require) {
         }
 
         if (util.isPlainObject(a) && util.isPlainObject(b)) {
-            if (!isEqual(lib.keys(a), lib.keys(b))) {
+            if (!isEqual(util.keys(a), util.keys(b))) {
                 return false;
             }
 
