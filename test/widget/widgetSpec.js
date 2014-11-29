@@ -278,14 +278,14 @@ define(function (require) {
             });
 
 
-            it('undelegateEvents(element, events)', function() {
+            it('undelegateEvents(element, events)', function () {
                 var ret = [];
                 var widget = globalVar.widget = new Widget({
                     template: '<div><p></p><ul><li></li></ul><span></span></div>'
                 }).render();
 
                 var div = widget.element;
-                widget.delegateEvents(div, 'click p', function() {
+                widget.delegateEvents(div, 'click p', function () {
                     ret.push(1);
                 });
                 widget.delegateEvents(div, 'click li', function () {
@@ -449,15 +449,14 @@ define(function (require) {
             expect(a.a).toEqual(undefined);
 
             a.render();
-            a.set('a', 3);
-            expect(a.a).toEqual(3);
+            expect(a.a).toEqual(1);
         });
 
-        it('set attribute after render method', function() {
+        it('set attribute after render method', function () {
             var r = [], p = [];
 
             var A = Widget.extend({
-                attrs: {
+                options: {
                     a: 1
                 },
 
@@ -468,12 +467,189 @@ define(function (require) {
             });
 
             var a = globalVar.a = new A({a: 2});
-            a.render();
             a.set('a', 3);
+            a.render();
 
-            expect(r).toEqual([3]);
-            expect(p).toEqual([2]);
-        })
+            expect(r.join()).toEqual('3');
+            expect(p.join()).toEqual('')
+        });
+
+        it('call render() after first render', function () {
+            var counter = 0;
+
+            function incr() {
+                counter++
+            }
+
+            var A = Widget.extend({
+                options: {
+                    a: 1
+                },
+
+                _onRenderA: incr
+            });
+
+            var a = globalVar.a = new A();
+            a.render();
+            expect(counter).toEqual(1);
+
+            a.render();
+            expect(counter).toEqual(1);
+        });
+
+
+        it('inherited options', function () {
+
+            var A = Widget.extend({
+                options: {
+                    a: '',
+                    b: null
+                }
+            });
+
+            var B = A.extend({
+                options: {
+                    a: '1'
+                }
+            });
+
+            var C = B.extend({
+                options: {
+                    a: '2',
+                    b: 'b'
+                }
+            });
+
+            var c = globalVar.c = new C();
+
+            expect(c.get('a')).toEqual('2');
+            expect(c.get('b')).toEqual('b');
+        });
+
+        it('override object in prototype', function () {
+
+            var B = Widget.extend({
+                o: {p1: '1'}
+            });
+
+            var C = B.extend({
+                o: {p2: '2'}
+            });
+
+            var c = globalVar.c = new C();
+            expect(c.o.p1).toEqual(undefined);
+            expect(c.o.p2).toEqual('2');
+        });
+
+        it('mix events object in prototype', function () {
+
+            var B = Widget.extend({
+                events: {p1: '1'}
+            });
+
+            var C = B.extend({
+                events: {p2: '2'}
+            });
+
+            var c = globalVar.c = new C();
+            expect(c.events.p1).toEqual('1');
+            expect(c.events.p2).toEqual('2');
+        });
+
+        it('dispose', function () {
+
+            var A = new Widget({
+                template: '<div id="dispose"><a></a></div>'
+            }).render();
+
+            expect(A.element).toEqual(dom.get('#dispose'));
+
+            debugger;
+            A.dispose();
+            expect(dom.get('#dispose')).toBe(null);
+            expect(A.element).toBe(null);
+        });
+
+        it('dispose is called twice', function () {
+
+            var A = new Widget({
+                template: '<div id="dispose"><a></a></div>'
+            }).render();
+
+            expect(function () {
+                A.dispose();
+                A.dispose();
+            }).not.toThrow()
+        });
+
+        it('dispose once', function () {
+            var calledA = 0, calledB = 0;
+            var A = Widget.extend({
+                dispose: function () {
+                    calledA++;
+                    A.superClass.dispose.call(this)
+                }
+            });
+
+            var B = A.extend({
+                dispose: function () {
+                    calledB++;
+                    B.superClass.dispose.call(this)
+                }
+            });
+
+            var c = new B().render();
+            c.dispose();
+            c.dispose();
+
+            expect(calledA).toBe(1);
+            expect(calledB).toBe(1)
+        });
+        it('style attribute', function () {
+            var A = new Widget({
+                style: {
+                    padding: '1px'
+                },
+                template: '<div id="dispose"><a></a></div>'
+            }).render();
+
+            expect(dom.getStyle(A.element, 'paddingTop')).toBe('1px')
+        });
+
+        it('options change callback', function () {
+            var spy = jasmine.createSpy('spy');
+
+            var Test = Widget.extend({
+                options: {
+                    a: 1
+                },
+                _onChangeA: spy
+            });
+
+            var test = new Test();
+            test.set('a', 2);
+            expect(spy.calls.count()).toBe(1);
+        });
+
+        it('set call onRender', function () {
+            var spy = jasmine.createSpy('spy');
+            var A = Widget.extend({
+                options: {
+                    a: 1
+                },
+                _onRenderA: spy
+            });
+
+            var a = new A();
+
+            a.render();
+            expect(spy.calls.count()).toBe(1);
+
+            a.set('a', 2);
+            expect(spy.calls.count()).toBe(2);
+        });
+
     });
+
 
 });

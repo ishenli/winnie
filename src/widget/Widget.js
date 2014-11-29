@@ -159,7 +159,7 @@ define(function (require) {
          */
         renderAndBindOptions: function () {
             var host = this;
-            var options = this.options;
+            var options = host.options;
             var option;
             for (option in options) {
                 if (!options.hasOwnProperty(option)) {
@@ -188,7 +188,7 @@ define(function (require) {
         },
         /**
          * 绑定代理事件
-         * @param {?jQuery} element 委托的element,默认为组件的element元素
+         * @param {?HTMLElement} element 委托的element,默认为组件的element元素
          * @param {Object} events
          * @param {string} events.key  事件名称
          * @param {Function} events.value 函数
@@ -352,6 +352,18 @@ define(function (require) {
             this.element.setAttribute(DATA_WIDGET_WID, wid);
 
             cachedInstances[wid] = this;
+        },
+        _onRenderId: function(val) {
+            console.log('renderId');
+            this.element.setAttribute('id', val)
+        },
+
+        _onRenderClassName: function(val) {
+            lib.addClass(this.element,val)
+        },
+
+        _onRenderStyle: function(val) {
+            lib.setStyle(this.element,val)
         }
 
     });
@@ -378,8 +390,7 @@ define(function (require) {
      * @returns {boolean|*}
      */
     function isEmptyOption(o) {
-        return o == null || (util.isString(o) || util.isArray(o)) && o.length === 0
-            || util.isEmptyObject(o);
+        return o == null || o === undefined;
     }
 
     /**

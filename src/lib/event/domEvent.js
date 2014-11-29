@@ -387,7 +387,6 @@ define(function (require) {
         once: once,
         one: once,
         off: off,
-        remove: off,
         detach: off,
 //        clone: clone,
         fire: fire,
