@@ -1,6 +1,6 @@
 define(function (require) {
-    var lib = require('../lib');
-    var handlebars = require('handlebars');
+    var lib = require('../../lib');
+    var etpl = require('etpl');
     var exports = {};
 
     /**
@@ -26,18 +26,20 @@ define(function (require) {
                 zoom = viewH / imgH;
                 offset.top = -(imgH - viewH) / 2;
                 offset.left = (viewW - imgW) / 2;
-            } else {
+            }
+            else {
                 zoom = viewW / imgW;
                 offset.top = (viewH - imgH) / 2;
-                offset.left = - (imgW - viewW) / 2;
+                offset.left = -(imgW - viewW) / 2;
             }
 
-        } else {
+        }
+        else {
             offset.left = (viewW - imgW) / 2;
             offset.top = (viewH - imgH) / 2;
         }
 
-        return{
+        return {
             zoom: zoom,
             offset: offset
         }
@@ -48,44 +50,45 @@ define(function (require) {
      * @param target 目标
      * @param index 索引
      */
-    exports.renderImageTpl = function(target,index) {
+    exports.renderImageTpl = function (target, index) {
         var el = this.get('imgList')[index];
-        var viewWidth = target.width();
-        var viewHeight = target.height();
+        var viewWidth = lib.width(target);
+        var viewHeight = lib.height(target);
         var marginRight = this.get('contentStyle').marginRight;
 
         var data = {
-            viewHeight:viewHeight,//border
-            viewWidth:viewWidth-marginRight,
-            img:$(el).attr(this.get('origin')),
-            marginRight:marginRight,
-            index:(index+1),
-            asideHeight:viewHeight,
-            len:this.get('len'),
-            description:$(el).attr('data-desc')
+            viewHeight: viewHeight,
+            viewWidth: viewWidth - marginRight,
+            img: el.getAttribute(this.get('origin')),
+            marginRight: marginRight,
+            index: (index + 1),
+            asideHeight: viewHeight,
+            len: this.get('len'),
+            description: el.getAttribute('data-desc')
         };
 
         //拓展数据对象
-        target.html(this.get('imageTpl')(data));
+
+        target.innerHTML = etpl.compile(this.get('imageTpl'))(data);
     };
 
-    exports._bindTheme = function() {
-        this.on('resize', this.contentResize,this);
+    exports._bindTheme = function () {
+        this.on('resize', this.contentResize, this);
         this.on('fullscreen:exit', this._exitFullsreen, this);
     };
 
-    exports.contentResize = function() {
+    exports.contentResize = function () {
 
-        var viewHeight = this.contentBox.height();
-        var boxMain = this.element.find('.box-main');
-        var boxAside = this.element.find('.box-aside');
+        var viewHeight = lib.height(this.contentBox);
+        var boxMain = lib.get('.box-main', this.element);
+        var boxAside = lib.get('.box-aside', this.element);
 
-        if(boxMain) {
-            boxMain.css({
-                height:viewHeight
+        if (boxMain) {
+            lib.css(boxMain, {
+                height: viewHeight
             });
-            boxAside.css({
-                height:viewHeight
+            lib.css(boxAside, {
+                height: viewHeight
             });
 
         }
@@ -96,7 +99,7 @@ define(function (require) {
      * 全屏查看
      * @private
      */
-    exports._fullScreen = function(){
+    exports._fullScreen = function () {
         fullScreen();
         this.contentResize();
     };
@@ -106,7 +109,7 @@ define(function (require) {
      * @param e
      * @private
      */
-    exports._exitFullsreen = function(e) {
+    exports._exitFullsreen = function (e) {
         // 关闭fullscreen
         fullScreen(true);
         this.contentResize();
@@ -117,17 +120,22 @@ define(function (require) {
             !document.mozFullScreenElement && !document.webkitFullscreenElement) {  // current working methods
             if (document.documentElement.requestFullscreen) {
                 document.documentElement.requestFullscreen();
-            } else if (document.documentElement.mozRequestFullScreen) {
+            }
+            else if (document.documentElement.mozRequestFullScreen) {
                 document.documentElement.mozRequestFullScreen();
-            } else if (document.documentElement.webkitRequestFullscreen) {
+            }
+            else if (document.documentElement.webkitRequestFullscreen) {
                 document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
             }
-        } else {
+        }
+        else {
             if (document.cancelFullScreen) {
                 document.cancelFullScreen();
-            } else if (document.mozCancelFullScreen) {
+            }
+            else if (document.mozCancelFullScreen) {
                 document.mozCancelFullScreen();
-            } else if (document.webkitCancelFullScreen) {
+            }
+            else if (document.webkitCancelFullScreen) {
                 document.webkitCancelFullScreen();
             }
         }

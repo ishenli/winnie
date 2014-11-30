@@ -36,6 +36,12 @@ exports.getLocations = function () {
                 less()
             ]
         },
+        {
+            location: /\.tpl\.js($|\?)/,
+            handler: [
+                html2js()
+            ]
+        },
         { 
             location: /\.styl($|\?)/, 
             handler: [

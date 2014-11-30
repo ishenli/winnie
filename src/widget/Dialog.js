@@ -6,13 +6,12 @@ define(function (require) {
 
     var Overlay = require('./Overlay');
     var Mask = require('./Mask');
+    var lib = require('../lib');
     var templateAble = require('./templateable');
 
     /**
      * @constructor
      * @extends module:Widget
-     * @requires Widget
-     * @requires jQuery
      * @exports Dialog
      * @example
      *   new Dialog({
@@ -119,17 +118,17 @@ define(function (require) {
          */
         _initTriggers: function () {
             var that = this;
-            var $doc = $(document);
+            var $doc = document;
 
             // 委托open
-            $doc.on('click', that.get('trigger'), function (e) {
+            lib.on($doc, 'click', that.get('trigger'), function (e) {
                 e.preventDefault();
                 that.activeTrigger = e.currentTarget;
                 that.show();
             });
 
             // 委托close
-            $doc.on('click', that.get('closeTrigger'), function (e) {
+            lib.on($doc, 'click', that.get('closeTrigger'), function (e) {
                 e.preventDefault();
                 that.hide();
             });
@@ -152,10 +151,11 @@ define(function (require) {
                 }
                 Mask.set('zIndex', that.get('zIndex')).show();
                 // 将mask节点放在dialog节点前面
-                that.element.before(Mask.element);
+
+                lib.before(that.element, Mask.element);
 
                 // 去掉滚动条的滚动效果
-                $('body,html').addClass(this.get('noScrollClass'));
+                lib.addClass('body,html', this.get('noScrollClass'));
                 //  避免重复存放
                 var existed = false;
                 for (var i = 0; i < Mask._dialogs.length; i++) {
@@ -181,7 +181,7 @@ define(function (require) {
                 return;
             }
             Mask.hide();
-            $('body,html').removeClass(this.get('noScrollClass'));
+            lib.removeClass('body,html', this.get('noScrollClass'));
 
         },
         /**
@@ -190,7 +190,7 @@ define(function (require) {
          * @private
          */
         _renderContent: function () {
-            var wrap = this.element.find('[data-role=content]');
+            var wrap = lib.get('[data-role=content]',this.element);
 
             if (!wrap) {
                 return;
@@ -198,15 +198,18 @@ define(function (require) {
 
             this.contentBox = wrap;
 
-            this.contentBox.css({
+            lib.css(this.contentBox,{
                 height: '100%',
                 zoom: 1
             });
 
             var content = this.get('content');
 
-            if (content) {
-                this.contentBox.html($(content));
+            if (content.nodeType) {
+                this.contentBox.appendChild(content);
+            }
+            else {
+                this.contentBox.innerHTML = content
             }
 
         }

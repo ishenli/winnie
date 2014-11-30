@@ -42,7 +42,12 @@ define(
          * @param {string=} value
          */
         exports.css = function(selector, styles, value) {
-            value ? exports.setStyle(selector, styles, value) : exports.getStyle(selector, styles);
+            if (value || util.isObject(styles)) {
+                exports.setStyle(selector, styles, value)
+            }
+            else {
+                exports.getStyle(selector, styles);
+            }
         };
 
         /**

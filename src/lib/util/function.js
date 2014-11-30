@@ -60,14 +60,14 @@ define(function (require) {
             var previous = 0;
             options || (options = {});
             var later = function () {
-                previous = options.leading === false ? 0 : $.now();
+                previous = options.leading === false ? 0 : util.now();
                 timeout = null;
                 result = func.apply(context, args);
                 context = args = null;
             };
 
             return function () {
-                var now = $.now();
+                var now = util.now();
                 if (!previous && options.leading === false) {
                     previous = now;
                 }
@@ -102,7 +102,7 @@ define(function (require) {
             var timestamp;
             var result;
             var later = function () {
-                var last = $.now() - timestamp;
+                var last = util.now() - timestamp;
                 if (last < wait && last > 0) {
                     timeout = setTimeout(later, wait - last);
                 }
@@ -118,7 +118,7 @@ define(function (require) {
             return function () {
                 context = scope || this;
                 args = arguments;
-                timestamp = $.now();
+                timestamp = util.now();
                 var callNow = immediate && !timeout;
                 if (!timeout) {
                     timeout = setTimeout(later, wait);

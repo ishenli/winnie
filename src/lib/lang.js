@@ -78,19 +78,5 @@ define(function (require) {
         return result;
     };
 
-    /**
-     * 简单的延迟
-     * @param {function} func
-     * @param {number} wait 时间秒
-     * @returns {*|number}
-     */
-    lang.delay = function (func, wait) {
-        var args = Array.prototype.slice.call(arguments, 2);
-        return setTimeout(function () {
-            return func.apply(null, args);
-        }, wait);
-    };
-
-
     return lang;
 });

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dialog test</title>
+    <link rel="stylesheet" href="../dep/lacus/asset/all/all.css"/>
+    <style type="text/css">
+        #box{
+            position: relative;
+            left: 100px;
+            top: 100px;
+            width: 500px;;
+        }
+    </style>
+</head>
+<body>
+<div class="mp-box" id="box" >
+    <div class="mp-box-head">
+        <h3 class="mp-box-title">Dialog test</h3>
+    </div>
+    <div class="mp-box-content">
+        <div class="mp-btn mp-btn-blue j-dialog-show" id="createDialog">dialog</div>
+        <div class="mp-btn mp-btn-blue" id="domDialog"> dialog with dom</div>
+        <div class="mp-btn mp-btn-blue" id="htmlDialog"> dialog with html</div>
+    </div>
+</div>
+<div class="mp-hidden">
+    <div id="domContent">hi,i am a dom content</div>
+</div>
+<div class="mp-dialog mp-hidden" id="j-dialog">
+    <a href="javascript:;" class="mp-dialog-close j-dialog-close" >x</a>
+    <div class="mp-dialog-content" data-role="content">
+        a text content
+    </div>
+</div>
+<div class="mp-dialog mp-hidden" id="j-dialog2">
+    <a href="javascript:;" class="mp-dialog-close j-dialog-close" >x</a>
+    <div class="mp-dialog-content" data-role="content"></div>
+</div>
+<div class="mp-dialog mp-hidden" id="j-dialog3">
+    <a href="javascript:;" class="mp-dialog-close j-dialog-close" >x</a>
+    <div class="mp-dialog-content" data-role="content"></div>
+</div>
+<script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/1-6-10/esl.js"></script>
+<script>
+    require.config({
+        'baseUrl': '../src',
+        'packages': [
+            {
+                'name': 'etpl',
+                'location': '../dep/etpl/3.0.0/src',
+                'main': 'main'
+            },
+            {
+                'name': 'promise',
+                'location': '../dep/promise/1.0.0/src',
+                'main': 'main'
+            }
+        ],
+        'paths': {}
+    });
+
+    require(['widget/Dialog','lib'], function (Dialog,lib) {
+
+        var dialog = new Dialog({
+            element:'#j-dialog',
+            trigger:'.j-dialog-show',
+            height:'100px',
+            width:'500px'
+        });
+
+        var dialogDom = new Dialog({
+            element:'#j-dialog2',
+            trigger:'#domDialog',
+            height:'200px',
+            width:'700px',
+            content:lib.get('#domContent')
+        });
+
+        //传入html标签
+        var dialogHhtml = new Dialog({
+            element:'#j-dialog3',
+            trigger:'#htmlDialog',
+            height:'200px',
+            width:'700px',
+            content:'<div style="background:#ffff00;padding:20px;">i am html!!!!</div>'
+        });
+    });
+</script>
+
+</body>
+</html>
