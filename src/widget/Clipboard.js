@@ -7,8 +7,8 @@
 define(function (require) {
 
     var Widget = require('./Widget');
-    var $ = require('jquery');
-
+    var lib = require('../lib');
+    var util = require('../lib/util');
     var currentElement;
 
     var Clipboard = Widget.extend({
@@ -49,13 +49,13 @@ define(function (require) {
          * @returns {Clipboard}
          */
         resetBridge: function () {
-            var $hb = $(this.htmlBridge);
-            $hb.css({
+            var $hb = this.htmlBridge;
+            lib.css($hb,{
                 left: '-9999px',
                 top: '-9999px'
             });
-            $hb.removeAttr('title');
-            $hb.removeAttr('data-clipboard-text');
+            $hb.removeAttribute('title');
+            $hb.removeAttribute('data-clipboard-text');
             currentElement = null;
             return this;
         },
@@ -65,8 +65,8 @@ define(function (require) {
          * @returns {Clipboard}
          */
         setCurrent: function (ele) {
-            if (typeof ele === 'string' || ele.nodeType) {
-                ele = $(ele);
+            if (typeof ele === 'string') {
+                ele = lib.create(ele);
             }
             currentElement = ele;
             this.reposition();
@@ -97,10 +97,10 @@ define(function (require) {
         glue: function (elements) {
             var me = this;
             elements = this._prepGlue(elements);
-            $.each(elements, function (i, el) {
-                if ($.inArray(el, me.gluedElements) === -1) {
+            util.each(elements, function (el,i) {
+                if (util.inArray(el, me.gluedElements) === -1) {
                     me.gluedElements.push(el);
-                    $(el).on('mouseover', _elementMouseOver);
+                    lib.on(el, 'mouseover', _elementMouseOver);
                 }
 
             });
@@ -114,9 +114,9 @@ define(function (require) {
          */
         unglue: function (elements) {
             var me = this;
-            $.each(elements, function (i, ele) {
-                $(ele).off('mouseover', me._mouseover);
-                var arrIndex = $.inArray(ele, me.gluedElements);
+            util.each(elements, function (ele, i) {
+                lib.off(ele, 'mouseover', me._mouseover);
+                var arrIndex = util.inArray(ele, me.gluedElements);
                 if (arrIndex !== -1) {
                     me.gluedElements.splice(arrIndex, 1);
                 }
@@ -145,9 +145,9 @@ define(function (require) {
 
             var pos = _getDOMObjectPosition();
 
-            var $htmlBridge = $(this.htmlBridge);
+            var $htmlBridge = this.htmlBridge;
 
-            $htmlBridge.css({
+            lib.css($htmlBridge, {
                 left: pos.left,
                 top: pos.top,
                 width: pos.width,
@@ -183,7 +183,7 @@ define(function (require) {
         },
         destroy: function () {
             this.unglue(this.gluedElements);
-            $(this.htmlBridge).remove();
+            lib.remove(this.htmlBridge);
             this.htmlBridge = this.flashBridge = null;
             delete Clipboard.prototype._singleton;
         },
@@ -220,11 +220,15 @@ define(function (require) {
      */
     function _bridge() {
         var client = Clipboard.prototype._singleton;
-        var container = $('#global-clipboard-html-bridge');
-        if (!container.length) {
+        var container = lib.get('#global-clipboard-html-bridge');
+        if (!container) {
             var flashVars = _vars(client);
-            var html = '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ' +
-                'id="global-clipboard-flash-bridge" width="100%" height="100%">' +
+            container = lib.create('<div id="global-clipboard-html-bridge"' +
+                'class="global-clipboard-container" ' +
+                'data-clipboard-ready="true" style="position: absolute; left: -9999px; top: -9999px; width: 15px;' +
+                    ' height: 15px; z-index: 9999;">' +
+                '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ' +
+                    'id="global-clipboard-flash-bridge" width="100%" height="100%">  ' +
                 '<param name="movie" value="' + client.get('moviePath') + '"/>' +
                 '<param name="allowScriptAccess" value="' + client.get('allowScriptAccess') + '"/>' +
                 '<param name="scale" value="exactfit"/>' +
@@ -238,50 +242,15 @@ define(function (require) {
                 'allowScriptAccess="always"  allowFullScreen="false" type="application/x-shockwave-flash" ' +
                 'wmode="transparent" pluginspage="http:// www.macromedia.com/go/getflashplayer"' +
                 'flashvars="' + flashVars + '" scale="exactfit">' +
-                '</embed>' +
-                '</object>';
-            // 将创建的flash对象放入dom中，并设置相关属性
-            container = $('<div></div>');
-            container.attr('id', 'global-clipboard-html-bridge')
-                .attr('class', 'global-clipboard-container')
-                .attr('data-clipboard-ready', false)
-                .css({
-                    position: 'absolute',
-                    left: '-9999px',
-                    top: '-9999px',
-                    zIndex: 9999,
-                    width: '20px',
-                    height: '20px'
-                });
-            container = $('<div id="global-clipboard-html-bridge"' +
-                'class="global-clipboard-container" ' +
-                'data-clipboard-ready="true" style="position: absolute; left: -9999px; top: -9999px; width: 15px;' +
-                    ' height: 15px; z-index: 9999;">' +
-                '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ' +
-                    'id="global-clipboard-flash-bridge" width="100%" height="100%">  ' +
-                '<param name="movie" value="./clipboard/ZeroClipboard.swf?nocache=1405183284535">' +
-                '<param name="allowScriptAccess" value="always">' +
-                '<param name="scale" value="exactfit">' +
-                '<param name="loop" value="false">' +
-                '<param name="menu" value="false">' +
-                '<param name="quality" value="best">' +
-                '<param name="bgcolor" value="#ffffff">' +
-                '<param name="wmode" value="transparent">' +
-                '<param name="flashvars" value="">' +
-                '<embed src="ZeroClipboard.swf?nocache=1405183284535" ' +
-                'loop="false" menu="false" ' +
-                'quality="best" bgcolor="#ffffff" width="100%" height="100%" ' +
-                'name="global-clipboard-flash-bridge" allowscriptaccess="always"' +
-                'allowfullscreen="false" type="application/x-shockwave-flash"' +
-                ' wmode="transparent" pluginspage="http:// www.macromedia.com/go/getflashplayer" ' +
-                'flashvars="" scale="exactfit">' +
+                '</embed>'+
                 '</object></div>'
             );
-            $('body').append(container);
+            document.body.appendChild(container);
         }
-        client.htmlBridge = container[0];
-        client.flashBridge = document['global-clipboard-flash-bridge'] || container.children()[0].lastElementChild;
+        client.htmlBridge = container;
+        client.flashBridge = document['global-clipboard-flash-bridge'] || container.children().lastElementChild;
     }
+
 
     /**
      * 获取flash object的值
@@ -321,22 +290,21 @@ define(function (require) {
         }
         return str.join('&');
     }
-
     /**
      * 获取点击区域的坐标和大小
      * @private
      */
     function _getDOMObjectPosition() {
-        var offset = currentElement.offset();
-        var width = currentElement.outerWidth();
-        var height = currentElement.outerHeight();
+        var offset = lib.getPosition(currentElement);
+        var width = lib.outerWidth(currentElement);
+        var height = lib.outerHeight(currentElement);
 
         return {
             top: offset.top,
             left: offset.left,
             width: width,
             height: height,
-            zIndex: currentElement.css('zIndex')
+            zIndex: lib.css(currentElement, 'zIndex')
         };
     }
 
