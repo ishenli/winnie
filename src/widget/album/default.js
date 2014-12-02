@@ -67,8 +67,6 @@ define(function (require) {
             description: el.getAttribute('data-desc')
         };
 
-        //拓展数据对象
-
         target.innerHTML = etpl.compile(this.get('imageTpl'))(data);
     };
 

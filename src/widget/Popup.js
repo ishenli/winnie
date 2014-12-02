@@ -4,9 +4,10 @@
  */
 define(function (require) {
 
+    var lib = require('../lib');
+    var util = require('../lib/util');
     var Overlay = require('./Overlay');
     var Mask = require('./Mask');
-    var $ = require('jquery');
     var templateAble = require('./templateable');
 
     /**
@@ -49,13 +50,12 @@ define(function (require) {
          * @property {number} options.delay hover出现的延迟
          */
         options: {
-
             width: '',
             height: '',
             trigger: {
                 value: null,
                 getter: function (val) {
-                    return $(val);
+                    return lib.get(val);
                 }
             },
             triggerType: 'hover',
@@ -64,7 +64,7 @@ define(function (require) {
             delegateNode: {
                 value: null,
                 getter: function (val) {
-                    return $(val);
+                    return lib.get(val);
                 }
             },
             align: {
@@ -83,12 +83,15 @@ define(function (require) {
                     return val;
                 },
                 getter: function (val) {
-                    return $.extend({}, val, this._specifiedBaseElement ? {} : {
+                    return util.extend({}, val, this._specifiedBaseElement ? {} : {
                         baseElement: this.activeTrigger
                     });
                 }
             },
+            // 是否能够触发
+            disabled:false,
             delay: 70,
+            effect:'none',
             template: require('./dialog/template')
 
         },
@@ -104,7 +107,7 @@ define(function (require) {
 
             this.blurHide(this.get('trigger'));
 
-            this.activeTrigger = this.get('trigger').eq(0);
+            this.activeTrigger = this.get('trigger');
 
             var self = this;
 
@@ -120,7 +123,7 @@ define(function (require) {
          * 销毁
          */
         dispose: function () {
-            this.elements.off();
+            lib.off(this.element);
             Popup.superClass.dispose.call(this);
 
         },
@@ -128,6 +131,7 @@ define(function (require) {
          * 重写父类的render方法
          */
         render: function () {
+
             Popup.superClass.render.call(this);
             return this;
         },
@@ -136,6 +140,9 @@ define(function (require) {
          * 显示Popup
          */
         show: function () {
+            if(this.get('disabled')) {
+                return;
+            }
             return Popup.superClass.show.call(this);
         },
 
@@ -165,7 +172,7 @@ define(function (require) {
         _bindClick: function () {
             var self = this;
             bindEvent('click', this.get('trigger'), function (e) {
-
+                //e.stopPropagation();
                 // this为trigger的元素
                 // 已经在页面中显示出来了
                 if (this._active === true) {
@@ -183,15 +190,19 @@ define(function (require) {
             });
 
             function makeActive(trigger) {
-                self.get('trigger').each(function (i, item) {
-                    if (trigger === item) {
-                        item._active = true;
-                        self.activeTrigger = $(item);
-                    }
-                    else {
-                        item._active = false;
-                    }
-                });
+
+                if(self.get('disabled')) {
+                    return;
+                }
+
+                var item = self.get('trigger');
+                if (trigger === self.get('trigger')) {
+                    item._active = true;
+                    self.activeTrigger = item;
+                }
+                else {
+                    item._active = false;
+                }
             }
         },
         /**
@@ -209,7 +220,7 @@ define(function (require) {
             bindEvent('mouseenter', trigger, function () {
                 clearTimeout(hideTimer);
                 hideTimer = null;
-                self.activeTrigger = $(this);
+                self.activeTrigger = lib.get(this);
                 showTimer = setTimeout(function () {
                     self.show();
                 }, delay);
@@ -218,11 +229,11 @@ define(function (require) {
             bindEvent('mouseleave', trigger, leaveHandler, delegateNode, this);
 
             //移到浮层上不消失
-            this.element.on('mouseenter', function () {
+            this.delegateEvents('mouseenter', function () {
                 clearTimeout(hideTimer);
             });
 
-            this.element.on('mouseleave', leaveHandler);
+            this.delegateEvents('mouseleave', leaveHandler);
 
             function leaveHandler() {
                 clearTimeout(showTimer);
@@ -246,7 +257,6 @@ define(function (require) {
             }
 
             var fade = (this.get('effect').indexOf('fade') !== -1);
-            var slide = (this.get('effect').indexOf('slide') !== -1);
             var self = this;
             var animConfig = {};
 
@@ -261,13 +271,15 @@ define(function (require) {
             };
 
             if (fade) {
-                this.element.stop(true, true)
+
+                // 这里需要animated的模块
+                /*this.element.stop(true, true)
                     .animate(animConfig, this.get('duration'), hideComplete)
                     .css({
                         'visibility': 'visible'
-                    });
+                    });*/
             } else {
-                this.element[val ? 'show' : 'hide']();
+                lib[val ? 'show' : 'hide'](this.element);
             }
         }
 
@@ -282,7 +294,7 @@ define(function (require) {
      * @param {Popup} instance 实例
      */
     function bindEvent(type, element, fn, delegateNode, instance) {
-        var hasDelegateNode = delegateNode && delegateNode[0];
+        var hasDelegateNode = delegateNode;
         instance.delegateEvents(
             hasDelegateNode ? delegateNode : element,
             hasDelegateNode ? type + " " + element.selector : type,

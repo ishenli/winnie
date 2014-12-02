@@ -16,7 +16,6 @@ define(function (require) {
      * @extends module:Widget
      * @requires Widget
      * @requires jQuery
-     * @requires Mask
      * @exports Overlay
      */
 
@@ -87,6 +86,7 @@ define(function (require) {
 
                 // 首先将元素hide
                 var position = lib.getStyle(this.element, 'position');
+
                 if (position === 'static' || position === 'relative') {
                     lib.setStyle(this.element,{
                         position: 'absolute',
@@ -152,15 +152,13 @@ define(function (require) {
                 y: align.baseXY[1]
             });
 
-            // 重新可见
+            // 还原
             if (isHidden) {
                 lib.setStyle(this.element,{
-                    visibility: 'visible'
+                    visibility: '',
+                    display:'none'
                 });
             }
-
-            // 触发resize事件
-            this.fire('resize');
 
             return this;
         },

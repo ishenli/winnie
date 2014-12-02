@@ -61,6 +61,22 @@ define(function (require) {
                 return obj;
             }
 
+            var lengthType = typeof obj.length,
+                oType = typeof obj;
+            // The strings and functions also have 'length'
+            if (lengthType !== 'number' ||
+                    // select element
+                typeof obj.nodeName === 'string' ||
+                    // window
+                    /*jshint eqeqeq:false*/
+                (obj != null && obj == obj.window) ||
+                oType === 'string' ||
+                    // https://github.com/ariya/phantomjs/issues/11478
+                (oType === 'function' && !('item' in obj && lengthType === 'number'))) {
+                return [obj];
+            }
+
+            // 类数组，如nodeList
             var ret = [];
 
             for (var i = 0, l = obj.length; i < l; i++) {
