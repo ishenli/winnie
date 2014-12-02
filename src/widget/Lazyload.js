@@ -5,18 +5,18 @@
 define(function (require) {
 
     var Widget = require('./Widget');
-    var $ = require('jquery');
-    var lib = require('./lib');
+    var lib = require('../lib');
+    var util = require('../lib/util');
     var IND = 0;
     var DEFAULT = 'default';
 
     /**
-    * @constructor
-    * @extends module:Widget
-    * @requires Widget
-    * @requires jQuery
-    * @exports Lazyload
-    */
+     * @constructor
+     * @extends module:Widget
+     * @requires Widget
+     * @requires jQuery
+     * @exports Lazyload
+     */
     var Lazyload = Widget.extend({
         /**
          * 控件配置项
@@ -100,10 +100,10 @@ define(function (require) {
 
             this._loadFn();
 
-            $(document).ready(function () {
+            lib.domReady(function () {
                 self._loadFn();
+                console.log('domReady');
             });
-
             this.resume();
         },
 
@@ -113,7 +113,7 @@ define(function (require) {
          */
         parseElement: function () {
             this._containerIsNotDocument = this.get('container').nodeType !== 9;
-            this.$window = $(window);
+            this.$window = window;
         },
 
         /**
@@ -121,13 +121,13 @@ define(function (require) {
          *
          * @public
          */
-        destroy: function () {
+        dispose: function () {
 
             //  清理相关数据、监听器
             this._callback = {};
             this._destroyed = true;
             this.pause();
-            this.fire('destroy');
+            this.fire('dispose');
             this.off();
         },
 
@@ -148,56 +148,54 @@ define(function (require) {
                 self.addElements(loadTextAreaData(this, self.get('execScript'), self.get('onStart')));
             };
 
-            var loadFn = $.proxy(function () {
-                if (autoDestroy && self._counter === 0 && $.isEmptyObject(self._callbacks)) {
+            var loadFn = util.bind(function () {
+                if (autoDestroy && self._counter === 0 && util.isEmptyObject(self._callbacks)) {
                     self.destroy();
                 }
                 //  开始载入
                 self._loadItems();
             }, self);
 
-            self._loadFn = lib.throttle(loadFn, this.get('duration'));
+            self._loadFn = util.throttle(loadFn, this.get('duration'));
 
         },
 
         /**
          * 添加元素到加载列表,要区分img 和 textarea
-         * @param {HTMLElement[]} eles
+         * @param {HTMLElement[]} els
          * @param {string} type  img or textarea
          */
-        addElements: function (eles, type) {
+        addElements: function (els, type) {
             var self = this;
 
             // 添加计数器
             self._counter = self._counter || 0;
-            if (typeof eles === 'string') {
-                eles = $(eles).get(); // 返回dom对象
+            if (typeof els === 'string') {
+                els = lib.query(els); // 返回dom对象
             }
-            else if (!$.isArray(eles)) {
-                eles = [eles];
+            else if (!util.isArray(els)) {
+                els = [els];
             }
 
-            $.each(eles, function (index, el) {
+            util.each(els, function (el, index) {
                 // 如果是图片
                 if (!type || type === 'img') {
 
                     // 获取每个容器中的所有图片
-                    var imgInEl = $(el).find('img').get();
-//                     var imgs = [el].concat(imgInEl);
-                    $.each($(imgInEl).filter(function (index, img) {
+                    var imgInEl = lib.query('img', el);
+                    util.each(util.filter(imgInEl, function (img, index) {
                         return img.getAttribute
                             && img.getAttribute(self.get('urlName'));
 
-                    }), function (index, img) {
+                    }), function (img, index) {
                         // 对带有延迟加载标志的图片进行load
                         self.onPlaceHolder = self.onPlaceHolder
-                            || function (callback) {
+                        || function (callback) {
                             var img = new Image();
                             var placeHolder = self.get('placeHolder');
 
                             img.src = placeHolder;
                             img.onload = function () {
-
                                 // callback为createLoader的load的匿名函数
                                 callback(placeHolder);
                             };
@@ -228,7 +226,7 @@ define(function (require) {
 
                 // 加载textarea的中html
                 if (!type || type === 'textarea') {
-                    $.each($('textarea.' + self.get('textareaFlag'), el), function (index, textarea) {
+                    util.each(lib.query('textarea.' + self.get('textareaFlag'), el), function (textarea, index) {
                         self.addCallback(textarea, self.textAreaHandle);
                     });
                 }
@@ -243,14 +241,14 @@ define(function (require) {
             var self = this;
             var callbacks = self._callbacks;
             if (typeof eles === 'string') {
-                eles = $(eles);
+                eles = lib.query(eles);
             }
-            else if (!$.isArray(eles)) {
+            else if (!util.isArray(eles)) {
                 eles = [eles];
             }
 
-            $.each(callbacks, function (callback, key) {
-                if ($.inArray(callback.el, eles)) {
+            util.each(callbacks, function (key, callback) {
+                if (util.inArray(callback.el, eles)) {
                     delete callbacks[key];
                 }
             });
@@ -266,7 +264,7 @@ define(function (require) {
             var callbacks = self._callbacks;
             var callback = {
                 el: el || document,
-                fn: fn || $.noop
+                fn: fn || util.noop
             };
             var key = ++IND;
 
@@ -286,7 +284,7 @@ define(function (require) {
          */
         removeCallback: function (el, fn) {
             var calllbacks = this._callbacks;
-            $.each(calllbacks, function (key, callback) {
+            util.each(calllbacks, function (callback, key) {
                 if (callback.el === el && (fn ? callback.fn === fn : 1)) {
                     delete calllbacks[key];
                 }
@@ -298,6 +296,7 @@ define(function (require) {
          * @private
          */
         _loadItems: function () {
+            console.log('loading items');
             var self = this;
 
             self._windowRegion = self._getBoundingRect();
@@ -307,7 +306,7 @@ define(function (require) {
                 self._containerRegion = self._getBoundingRect(self.get('container'));
             }
             // 遍历lazyload的list
-            $.each(self._callbacks, function (key, callback) {
+            util.each(self._callbacks, function (callback, key) {
                 callback && self._loadItem(key, callback);
             });
         },
@@ -353,10 +352,10 @@ define(function (require) {
             if (this._destroyed) {
                 return;
             }
-            this.$window.on('scroll resize', loadFn);
+            lib.on(this.$window, 'scroll resize', loadFn);
             if (this._containerIsNotDocument) {
-                var $container = $(this.get('container'));
-                $container.on('scroll', loadFn);
+                var $container = lib.get(this.get('container'));
+                lib.on($container, 'scroll', loadFn);
             }
         },
         /**
@@ -371,10 +370,10 @@ define(function (require) {
         pause: function () {
             var self = this;
             var loadFn = self._loadFn;
-            this.$window.off('scroll resize', loadFn);
+            lib.off(this.$window, 'scroll resize', loadFn);
             if (this._containerIsNotDocument) {
-                var $container = $(this.get('container'));
-                $container.off('scroll', loadFn);
+                var $container = lib.get(this.get('container'));
+                lib.off($container, 'scroll', loadFn);
             }
         },
         /**
@@ -391,18 +390,18 @@ define(function (require) {
             var right;
             var bottom;
             if (el) { // 传入目标元素
-                var $el = $(el);
-                width = $el.outerWidth();
-                height = $el.outerHeight();
-                var offset = $el.offset();
+                var $el = lib.get(el);
+                width = lib.outerWidth($el);
+                height = lib.outerHeight($el);
+                var offset = lib.getPosition($el);
                 left = offset.left;
                 top = offset.top;
             }
             else {
-                width = this.$window.width();
-                height = this.$window.height();
-                top = this.$window.scrollTop();
-                left = this.$window.scrollLeft();
+                width = lib.width(this.$window);
+                height = lib.height(this.$window);
+                top = lib.getScrollTop();
+                left = lib.getScrollLeft();
             }
 
             var threshold = this.get('threshold');
@@ -440,7 +439,7 @@ define(function (require) {
             ele: img,
             src: dataSrc
         };
-        var result = (!$.isFunction(onStart)) || (onStart(params) !== false);
+        var result = (!util.isFunction(onStart)) || (onStart(params) !== false);
 
         if (result && params.src) {
             var setSrc = function (src) {
@@ -467,7 +466,7 @@ define(function (require) {
         textarea.style.display = 'none';
         textarea.className = '';
         var html = textarea.value;
-        if ($.isFunction(onStart)) {
+        if (util.isFunction(onStart)) {
             var ret = onStart({
                 type: 'textarea',
                 elem: textarea,
@@ -478,13 +477,13 @@ define(function (require) {
             }
         }
 
-        var $html = $(html);
-        var $textarea = $(textarea);
-        $textarea.before($html);
+        var $html = lib.create(html);
+        var $textarea = lib.get(textarea);
+        $textarea.parentNode.insertBefore($html, $textarea);
 
-        /*if (isExecScript) {
+        if (isExecScript) {
             // 执行插入节点的脚本
-            var scriptText = $textarea[0].parentNode.parentNode.getElementsByTagName('script');
+            var scriptText = $textarea.parentNode.getElementsByTagName('script');
             var node; // 脚本节点
             var text; // 脚本的内容
             for (var i = 0, len = scriptText.length; i < len; i++) {
@@ -492,10 +491,10 @@ define(function (require) {
                 text = node.text || node.textContent || node.innerHTML || '';
                 window.eval.call(window, text);
             }
-        }*/
+        }
 
         // 返回插入之后的dom节点
-        return $html.get();
+        return $html;
     }
 
     /**
@@ -512,7 +511,7 @@ define(function (require) {
             return false;
         }
 
-        var eleOffset = $(ele).offset();
+        var eleOffset = lib.getPosition(ele);
         var isInViewport = true;
         var inWin;
         var left = eleOffset.left;
@@ -536,11 +535,11 @@ define(function (require) {
     }
 
     function getElementHeight(ele) {
-        return $(ele).outerHeight();
+        return lib.outerHeight(ele);
     }
 
     function getElementWidth(ele) {
-        return $(ele).outerWidth();
+        return lib.outerWidth(ele);
     }
 
     /**

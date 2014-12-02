@@ -13,7 +13,8 @@ define(function (require) {
         require('./dom/manipulation'),
         require('./dom/page'),
         require('./dom/style'),
-        require('./dom/class')
+        require('./dom/class'),
+        require('./dom/function')
     );
 
     return dom;

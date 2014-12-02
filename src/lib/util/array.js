@@ -101,7 +101,20 @@ define(function (require) {
                     }
                 }
                 return res;
-            }
+            },
+        filter: AP.filter ?
+            function (arr, fn, context) {
+                return AP.filter.call(arr, fn, context || this);
+            } :
+            function (arr, fn, context) {
+                var ret = [];
+                util.each(arr, function (item, i, arr) {
+                    if (fn.call(context || this, item, i, arr)) {
+                        ret.push(item);
+                    }
+                });
+                return ret;
+        }
     });
 
     return util;
