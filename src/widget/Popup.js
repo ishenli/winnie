@@ -14,7 +14,6 @@ define(function (require) {
      * @constructor
      * @extends module:Overlay
      * @requires Overlay
-     * @requires jQuery
      * @requires Mask
      * @exports Popup
      * @example
@@ -288,9 +287,9 @@ define(function (require) {
     /**
      * 绑定事件
      * @param {string} type 事件类型
-     * @param {jQuery} element 控件的element节点
+     * @param {HTMLElement} element 控件的element节点
      * @param {Function} fn 监听函数
-     * @param {jQuery} delegateNode 委托的节点
+     * @param {HTMLElement} delegateNode 委托的节点
      * @param {Popup} instance 实例
      */
     function bindEvent(type, element, fn, delegateNode, instance) {
