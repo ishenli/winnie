@@ -53,14 +53,14 @@ define(function (require) {
             expect(Dom.query('i', node).length).toBe(1);
         });
 
-       it('should return empty when context is null', function () {
+        it('should return empty when context is null', function () {
             expect(Dom.query('#test-selector', null).length).toBe(0);
         });
 
         /*it('test support disconnect node', function () {
-            var div = $('<div id="t"><span id="t2"></span></div>')[0].firstChild;
-            expect(Dom.test(div, '#t span')).toBe(true);
-        });*/
+         var div = $('<div id="t"><span id="t2"></span></div>')[0].firstChild;
+         expect(Dom.test(div, '#t span')).toBe(true);
+         });*/
 
         it('support #id', function () {
             expect(Dom.get('#test-selector').id).toBe('test-selector');
@@ -133,7 +133,7 @@ define(function (require) {
         });
     });
 
-   describe('selector context', function () {
+    describe('selector context', function () {
         var html = Dom.create(
             '<div><div id="context-test-1" class="context-test">' +
             '<div>' +
@@ -151,7 +151,7 @@ define(function (require) {
             '</div>' +
             '</div></div>');
 
-        Dom.append(document.body,html);
+        Dom.append(document.body, html);
 
         it('should attach each properly', function () {
             var c3 = Dom.query('.context-test-3');
@@ -165,7 +165,7 @@ define(function (require) {
             expect(Dom.equals(a, c3));
         });
 
-       it('should support #id', function () {
+        it('should support #id', function () {
             expect(Dom.query('.context-test-3', '#context-test-1').length).toBe(1);
 
             expect($('.context-test-3', '#context-test-1').length).toBe(1);
@@ -214,10 +214,10 @@ define(function (require) {
             expect(r = cj.find(c3j).length).toBe(2);
         });
 
-     it('support other format as first parameter', function () {
+        it('support other format as first parameter', function () {
 
             // 数组
-            o = [1];
+            var o = [1];
             expect(Dom.query(o)).toBe(o);
 
             // NodeList
@@ -229,8 +229,7 @@ define(function (require) {
         });
 
         it('id selector should constrain to context', function () {
-            Dom.append(Dom.create('<div id="tt"></div><div id="tt2"></div>'),
-                'body');
+            Dom.append('body', Dom.create('<div id="tt"></div><div id="tt2"></div>'));
 
             expect(Dom.query('#tt', Dom.get('#tt2')).length).toBe(0);
 
@@ -242,7 +241,7 @@ define(function (require) {
             expect(Dom.get('#tt2')).toBe(null);
         });
 
-       it('should get child element by id selector ' +
+        it('should get child element by id selector ' +
         'even node is not in the document', function () {
             var t = Dom.create('<div id="tt"><div id="tt2"></div></div>');
             expect(Dom.query('#tt2', t).length).toBe(1);
@@ -261,7 +260,7 @@ define(function (require) {
             '<div class="j"></div>' +
             '</div>');
 
-            document.body.appendChild(div);
+            Dom.append(document.body, div);
 
             var ret = Dom.query('#long-simple-selector .t .t2 span .j');
 

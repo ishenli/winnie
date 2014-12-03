@@ -1,6 +1,6 @@
 /**
  * @file class 操作
- * @author shenli （meshenli@gmail.com）
+ * @author shenli <meshenli@gmail.com>
  * https://developer.mozilla.org/zh-CN/docs/DOM/element.classList
  */
 define(function (require) {

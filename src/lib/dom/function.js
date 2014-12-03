@@ -1,6 +1,6 @@
 /**
  * @file dom 常用的函数
- * @author ishenli （meshenli@gmail.com）
+ * @author ishenli <meshenli@gmail.com>
  */
 define(function (require) {
 

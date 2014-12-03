@@ -6,7 +6,7 @@ define(function (require) {
 
     var Dom = require('lib/dom');
     var util = require('lib/util');
-    var UA = require('component/ua');
+    var UA = require('lib/ua');
 
     describe('style',function () {
         it("css works", function () {

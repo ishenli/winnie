@@ -1,11 +1,13 @@
 /**
  * @file dom 操作
- * @author shenli （meshenli@gmail.com）
+ * @author shenli <meshenli@gmail.com>
  */
 define(function (require) {
 
     var dom = require('./base');
     var util = require('../util');
+
+    var R_SCRIPT_TYPE = /^$|\/(?:java|ecma)script/i;
 
     var exports = {};
 
@@ -32,103 +34,99 @@ define(function (require) {
      * 将目标元素添加到基准元素之后
      * @param {HTMLElement} el 被添加的目标元素
      * @param {HTMLElement|String} stuff 添加的目标元素或字符串
+     * @param {boolean} execScript 是否执行js
      * @return {HTMLElement} 被添加的目标元素
      */
-    exports.append = function (el, stuff) {
-        return exports._insert(el, stuff, "beforeEnd");
+    exports.append = function (el, stuff, execScript) {
+        return insert(el, stuff, execScript, "beforeEnd");
     };
 
-    exports.prepend = function (el, stuff) {
-        return exports._insert(el, stuff, "afterBegin");
+    exports.prepend = function (el, stuff, execScript) {
+        return insert(el, stuff, execScript, "afterBegin");
     };
 
-    exports.before = function (el, stuff) {
-        return exports._insert(el, stuff, "beforeBegin");
+    exports.before = function (el, stuff, execScript) {
+        return insert(el, stuff, execScript, "beforeBegin");
     };
 
-    exports.after = function (el, stuff) {
-        return exports._insert(el, stuff, "afterEnd");
+    exports.after = function (el, stuff, execScript) {
+        return insert(el, stuff, execScript, "afterEnd");
     };
 
     /**
      * 插入元素
-     * @param {HTMLElement} el
-     * @param {HTMLElement} stuff
+     * @param {HTMLElement|HTMLElement[]|string} refNode
+     * @param {HTMLElement|HTMLElement[]|string} newNode
+     * @param {boolean} execScript
      * @param {string} where
-     * @returns {*}
-     * 以下元素的innerHTML在IE中是只读的，调用insertAdjacentElement进行插入就会出错
-     * col, colgroup, frameset, html, head, style,
-     * title,table, tbody, tfoot, thead, 与tr;
-     * http://www.cnblogs.com/rubylouvre/archive/2009/12/14/1622631.html
      */
-    exports._insert = function (el, stuff, where) {
-        var doc = el.ownerElement || document;
-        var frag = document.createDocumentFragment();
+    function insert (refNode, newNode, execScript, where) {
 
-        if (stuff.version) { // 如果是dom节点,则把它里面的元素节点移到文档碎片中
-            util.each(stuff ,function (el) {
-                frag.appendChild(el);
-            });
-            stuff = frag;
+        newNode = dom.query(newNode);
+
+        if (execScript) {
+            execScript = [];
+        }
+        newNode = filterScripts(newNode, execScript);
+
+        refNode = dom.query(refNode);
+
+        // 如果是script等一些节点或者refNode为空数组就不要插入了
+        if((!newNode.length &&(!execScript || !execScript.length)) || !refNode.length){
+            return;
         }
 
-        // 供火狐与IE部分元素调用
-        exports._insertAdjacentElement = function (el, node, where) {
-            switch (where) {
-                case 'beforeBegin':
-                    el.parentNode.insertBefore(node, el);
-                    break;
-                case 'afterBegin':
-                    el.insertBefore(node, el.firstChild);
-                    break;
-                case 'beforeEnd':
-                    el.appendChild(node);
-                    break;
-                case 'afterEnd':
-                    if (el.nextSibling) {
-                        el.parentNode.insertBefore(node, el.nextSibling);
-                    }
-                    else {
-                        el.parentNode.appendChild(node);
-                    }
-                    break;
+        // 接下来才可以进入插入的操作
+        newNode = dom.nodeListToFragment(newNode);
+
+        var cloneNode;
+        var node;
+        if (refNode.length > 1) { // 插入的节点多于一个，需要将newNode拷贝,fragment 一旦插入里面就空了，先复制下
+            cloneNode = dom.clone(newNode, true);
+        }
+
+        refNode.each(function (el,i) {
+
+            if (newNode) {
+                node = i > 0 ? dom.clone(cloneNode, true) : newNode;
+                insertAdjacentElement(el, node, where);
             }
-        };
 
-        exports._insertAdjacentHTML = function (el, htmlStr, where) {
-            var range = doc.createRange();
-            switch (where) {
-                case "beforeBegin":// before
-                    range.setStartBefore(el);
-                    break;
-                case "afterBegin":// after
-                    range.selectNodeContents(el);
-                    range.collapse(true);
-                    break;
-                case "beforeEnd":// append
-                    range.selectNodeContents(el);
-                    range.collapse(false);
-                    break;
-                case "afterEnd":// prepend
-                    range.setStartsAfter(el);
-                    break;
+            // 执行脚本
+            if (execScript && execScript.length) {
+                util.each(execScript, evalScript);
             }
-            var parsedHTML = range.createContextualFragment(htmlStr);
-            exports._insertAdjacentElement(el, parsedHTML, where);
-        };
 
-        //如果是节点则复制一份,fragment 一旦插入里面就空了，先复制下
-        //stuff = stuff.nodeType ? stuff.cloneNode(true) : stuff;
-        if (el.insertAdjacentHTML) {// ie,chrome,opera,safari都已实现insertAdjacentXXX家族
-            el['insertAdjacent' + (stuff.nodeType ? 'Element' : 'HTML')](where, stuff);
-        }
-        else {
-            // 火狐专用
-            exports['_insertAdjacent' + (stuff.nodeType ? 'Element' : 'HTML')](el, stuff, where);
-        }
+        });
 
-        return el;
-    };
+        return refNode
+    }
+
+    function insertAdjacentElement (el, node, where) {
+        /*if (el.insertAdjacentElement) {
+            return el.insertAdjacentElement(where, node);
+        }*/
+        switch (where) {
+            case 'beforeBegin':
+                el.parentNode.insertBefore(node, el);
+                break;
+            case 'afterBegin':
+                el.insertBefore(node, el.firstChild);
+                break;
+            case 'beforeEnd':
+                el.appendChild(node);
+                break;
+            case 'afterEnd':
+                if (el.nextSibling) {
+                    el.parentNode.insertBefore(node, el.nextSibling);
+                }
+                else {
+                    el.parentNode.appendChild(node);
+                }
+                break;
+        }
+    }
+
     /**
      * 在某个节点之前插入节点
      * @param {HTMLElement} newElement
@@ -154,9 +152,9 @@ define(function (require) {
      * @param {HTMLElement|HTMLElement[]|String} wrappedNode set of matched elements
      * @param {HTMLElement|String} wrapperNode html node or selector to get the node wrapper
      */
-    exports.wrapAll = function(wrappedNode,wrapperNode) {
+    exports.wrapAll = function (wrappedNode, wrapperNode) {
         wrapperNode = wrapperNode.cloneNode(true);
-        if (wrappedNode.parentNode){
+        if (wrappedNode.parentNode) {
             exports.insertBefore(wrapperNode, wrappedNode);
         }
 
@@ -167,7 +165,7 @@ define(function (require) {
             wrapperNode = c;
         }
 
-        exports.append(wrapperNode,wrappedNode);
+        exports.append(wrapperNode, wrappedNode);
     };
 
     /**
@@ -199,6 +197,57 @@ define(function (require) {
             }
         });
     };
+
+
+    function filterScripts(nodes, scripts) {
+        var ret = [], el, nodeName;
+        for (var i = 0; nodes[i]; i++) {
+            el = nodes[i];
+            nodeName = nodes[i].nodeName.toLowerCase();
+            if (el.nodeType === 11) { // 是一个fragment
+                ret.push.apply(ret, filterScripts(util.makeArray(el.childNodes), scripts));
+            }
+            // 区分是否是script节点
+            else if (nodeName === 'script' && isJs(el)) {
+                // 先将script节点删除，避免ie9执行
+                if (el.parentNode) {
+                    el.parentNode.removeChild(el)
+                }
+
+                if (scripts) {
+                    scripts.push(el);
+                }
+            }
+            else { // script节点被包含在其他节点里面
+                if (el.nodeType === 1) {
+                    var tmp = [], j, script;
+                    var scriptNodes = el.getElementsByTagName('script');
+                    for (j = 0; j < scriptNodes.length; j++) {
+                        script = scriptNodes[j];
+                        if (isJs(el)) {
+                            tmp.push(script);
+                        }
+                    }
+                    // 加入nodes节点中，这里是因为递归，所以要把tmp添加
+                    Array.prototype.slice.apply(nodes, [i + 1, 0].concat(tmp));
+                }
+
+                ret.push(el);
+            }
+        }
+        return ret;
+    }
+
+    function evalScript(el) {
+        var code = util.trim(el.text || el.textContent || el.innerHTML || '');
+        if (code) {
+            util.globalEval(code);
+        }
+    }
+
+    function isJs(el) {
+        return !el.type || R_SCRIPT_TYPE.test(el.type);
+    }
 
     return exports;
 });

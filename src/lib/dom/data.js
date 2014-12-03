@@ -1,6 +1,6 @@
 /**
  * @file data
- * @author shenli （meshenli@gmail.com）
+ * @author shenli <meshenli@gmail.com>
  */
 define(
     function (require) {
@@ -39,6 +39,29 @@ define(
                         return cache;
                     }
                 }
+            },
+            removeData: function (elem, name) {
+                var key = elem[EXPANDO], cache;
+                if (!key) {
+                    return;
+                }
+                cache = dataCache[key];
+                if (name !== undefined) {
+                    delete cache[name];
+                    if (util.isEmptyObject(cache)) {
+                        domOps.removeData(elem);
+                    }
+                } else {
+                    delete dataCache[key];
+                    try {
+                        delete elem[EXPANDO];
+                    } catch (e) {
+                        elem[EXPANDO] = undefined;
+                    }
+                    if (elem.removeAttribute) {
+                        elem.removeAttribute(EXPANDO);
+                    }
+                }
             }
         };
 
@@ -59,6 +82,26 @@ define(
                     else {
                         cache = ob[EXPANDO] = ob[EXPANDO] || {};
                         return cache;
+                    }
+                }
+            },
+            removeData: function (ob, name) {
+                if (ob == win) {
+                    return objectOps.removeData(winDataCache, name);
+                }
+                var cache = ob[EXPANDO];
+                if (name !== undefined) {
+                    delete cache[name];
+                    if (util.isEmptyObject(cache)) {
+                        objectOps.removeData(ob);
+                    }
+                } else {
+                    try {
+                        // ob maybe window in iframe
+                        // ie will throw error
+                        delete ob[EXPANDO];
+                    } catch (e) {
+                        ob[EXPANDO] = undefined;
                     }
                 }
             }
@@ -129,5 +172,31 @@ define(
             element.removeAttribute(attrPrefix + key);
         };
 
+
+        /**
+         * 清楚后代元素所有的关联的数据和事件
+         * @param {HTMLElement[]|String|HTMLElement} selector
+         * @param {boolean} deep
+         */
+        exports.cleanData = function(selector, deep) {
+            var els = dom.query(selector);
+            var el;
+            //var domEvent = require('../event');
+
+            for(var i= 0,len = els.length;i<len;i++) {
+                el = els[i];
+                if (el.nodeType) {
+                    var children = deep && (util.makeArray(el.getElementsByTagName('*')) || []);
+                    children.push(el);
+                    for (var j=0;j<children.length;j++) {
+                        domOps.removeData(children[i]);
+                        domEvent.off(children[i])
+                    }
+                }
+                else {
+                    objectOps.removeData(el);
+                }
+            }
+        };
         return exports;
     });

@@ -1,119 +1,270 @@
 /**
  * @file create
- * Turn HTML into DOM elements x-browser.
+ * @author ishenli <meshenli@gmail.com>
  */
 define(function (require) {
 
+    var exports = {};
+    var UA = require('../ua');
     var util = require('../util');
-    /**
-     * Tests for browser support.
-     */
+    var dom = require('./base');
+    var doc = document;
+    var DEFAULT_DIV = doc && doc.createElement('div');
 
-    var div = document.createElement('div');
-// Setup
-    div.innerHTML = '  <link/><table></table><a href="/a">a</a><input type="checkbox"/>';
-// Make sure that link elements get serialized correctly by innerHTML
-// This requires a wrapper element in IE
-    var innerHTMLBug = !div.getElementsByTagName('link').length;
-    div = undefined;
-
-    /**
-     * Wrap map from jquery.
-     */
-
-    var map = {
-        legend: [1, '<fieldset>', '</fieldset>'],
-        tr: [2, '<table><tbody>', '</tbody></table>'],
-        col: [2, '<table><tbody></tbody><colgroup>', '</colgroup></table>'],
-        // for script/link/style tags to work in IE6-8, you have to wrap
-        // in a div with a non-whitespace character in front, ha!
-        _default: innerHTMLBug ? [1, 'X<div>', '</div>'] : [0, '', '']
+    var isOldIE = (UA.ie && UA.ie < 9);
+    var lostLeadingTailWhitespace = isOldIE;
+    var creator = exports._creator = {
+        div: defaultCreator
     };
 
-    map.td =
-        map.th = [3, '<table><tbody><tr>', '</tr></tbody></table>'];
+    // 各种正则
+    var R_LEADING_WHITESPACE = /^\s+/; // 开头空白符
+    var R_TAIL_WHITESPACE = /\s+$/; // 末尾空白符
+    var R_SCRIPT_TYPE = /^$|\/(?:java|ecma)script/i;
+    var REG_HTML = /<|&#?\w+;/;
+    var REG_SIMPLE_HTML = /^<(\w+)\s*\/?>(?:<\/\1>)?$/; // exec('<p>') => ['<p'>,'p']
+    var REG_TAG = /<([\w:]+)/; // exec('<p>') => ['<p','p']
 
-    map.option =
-        map.optgroup = [1, '<select multiple="multiple">', '</select>'];
 
-    map.thead =
-        map.tbody =
-            map.colgroup =
-                map.caption =
-                    map.tfoot = [1, '<table>', '</table>'];
+    var creatorsMap = {
+        area: 'map',
+        thead: 'table',
+        td: 'tr',
+        th: 'tr',
+        tr: 'tbody',
+        tbody: 'table',
+        tfoot: 'table',
+        caption: 'table',
+        colgroup: 'table',
+        col: 'colgroup',
+        legend: 'fieldset'
+    };
 
-    map.text =
-        map.circle =
-            map.ellipse =
-                map.line =
-                    map.path =
-                        map.polygon =
-                            map.polyline =
-                                map.rect = [1, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1">', '</svg>'];
+    var tagTpl = '<{tag}>{html}</{tag}>';
+    var p;
 
-    /**
-     * Parse `html` and return a DOM Node instance, which could be a TextNode,
-     * HTML DOM Node of some kind (<div> for example), or a DocumentFragment
-     * instance, depending on the contents of the `html` string.
-     *
-     * @param {String} html - HTML string to "create"
-     * @param {Document} doc - The `document` instance to create the Node for
-     * @return {Node} the TextNode, DOM Node, or DocumentFragment instance
-     * @api private
-     */
-
-    function create(html, doc) {
-        if ('string' != typeof html) throw new TypeError('String expected');
-
-        // default to the global `document` object
-        if (!doc) doc = document;
-
-        // tag name
-        var m = /<([\w:]+)/.exec(html);
-        if (!m) return doc.createTextNode(html);
-
-        html = html.replace(/^\s+|\s+$/g, ''); // Remove leading/trailing whitespace
-
-        var tag = m[1];
-
-        var el;
-        // body support
-        if (tag == 'body') {
-             el = doc.createElement('html');
-            el.innerHTML = html;
-            return el.removeChild(el.lastChild);
-        }
-
-        // wrap map
-        var wrap = map[tag] || map._default;
-        var depth = wrap[0];
-        var prefix = wrap[1];
-        var suffix = wrap[2];
-         el = doc.createElement('div');
-        el.innerHTML = prefix + html + suffix;
-        while (depth--) el = el.lastChild;
-
-        // one element
-        if (el.firstChild == el.lastChild) {
-            return el.removeChild(el.firstChild);
-        }
-
-        // several elements
-        var fragment = doc.createDocumentFragment();
-        while (el.firstChild) {
-            fragment.appendChild(el.removeChild(el.firstChild));
-        }
-
-        return fragment;
+    for (p in creatorsMap) {
+        /*jshint loopfunc: true*/
+        (function (tag) {
+            creator[p] = function (html, ownerDoc) {
+                return creator.create(util.substitute(tagTpl, {
+                    tag: tag,
+                    html: html
+                }), ownerDoc);
+            };
+        })(creatorsMap[p]);
     }
 
+    function getHolderDiv(ownerDoc, clear) {
+        var holder = ownerDoc && ownerDoc !== doc ?
+            ownerDoc.createElement('div') :
+            DEFAULT_DIV;
+        if (clear && holder === DEFAULT_DIV) {
+            holder.innerHTML = '';
+        }
+        return holder;
+    }
+
+    function defaultCreator(html, htmlDoc) {
+        var holder = getHolderDiv(htmlDoc);
+        holder.innerHTML = 'm<div>' + html + '</div>';
+        return holder.lastChild;
+    }
+
+    /**
+     * 创建dom节点
+     * @param {string|HTMLElement|HTMLElement[]} html
+     * @param  {HTMLDocument} doc
+     * @returns {*}
+     */
+    exports.domify = exports.create = function (html, doc) {
+        var ret = null;
+        var context = doc || document;
+
+        if (!html) {
+            return ret;
+        }
+
+        if (typeof html !== 'string') {
+            return ret;
+        }
+
+        var match;
+        var k;
+        var tagName;
+        var holder;
+        var whiteSpaceMatch;
+        var nodes;
+        // 已经是dom节点
+        if (html.nodeType) {
+            return exports.clone(html);
+        }
+
+        // 判断是html字符串还是普通字符串
+        if (!REG_HTML.test(html)) {
+            ret = context.createTextNode(html);
+        }
+
+        // 传入<p>,不完整的tag
+        else if ((match = REG_SIMPLE_HTML.exec(html))) {
+            ret = context.createElement(match[1]);
+        }
+        else {
+
+            if ((match = REG_TAG.exec(html)) && (k = match[1])) {
+                tagName = k.toLowerCase();
+            }
+
+            /**
+             * 1.html不含有style和script标签，因为通过innerHTML的标签不会执行，插入的style在ie9下的浏览器不会生效
+             * 2.浏览器不会忽略前导空白符，或者html代码不以空白符开头。因为IE9一下的浏览器会自动剔除html中的html代码中的
+             * 前导空白符
+             * 3.html可能需要包裹父标签才能正确的序列化（option需要在多选的select中）
+             * 基本思路通过一个holder节点（默认是div）来插入html内容,holder处理#3的问题
+             */
+            holder = (creator[tagName] || defaultCreator)(html, context);
+
+            if (lostLeadingTailWhitespace && (whiteSpaceMatch = html.match(R_LEADING_WHITESPACE))) {
+                // 将空白符先存起来，然后创建文本节点后，在插入元素前面
+                holder.insertBefore(context.createTextNode(whiteSpaceMatch[0]), holder.firstChild);
+            }
+
+            if (lostLeadingTailWhitespace && /\S/.test(html) &&
+                (whiteSpaceMatch = html.match(R_TAIL_WHITESPACE))) {
+                holder.appendChild(context.createTextNode(whiteSpaceMatch[0]));
+            }
+
+            nodes = holder.childNodes;
+
+            if (nodes.length === 1) {
+                // 这时候所需的节点是在Node中的
+                ret = nodes[0].parentNode.removeChild(nodes[0]);
+            }
+            else if (nodes.length) {
+                ret = exports.nodeListToFragment(nodes);
+            }
+            else {
+                console.error('dom create error:', html);
+            }
+
+        }
+        return ret;
+
+    };
+
+    /**
+     * 对第一个元素进行深度clone
+     * @param {HTMLElement|String|HTMLElement[]}  selector
+     * @param {boolean} deep
+     */
+    exports.clone = function (selector, deep) {
+        var el = dom.get(selector);
+        if (el) {
+            return null;
+        }
+        var cloneNode;
+        var nodeType = el.nodeType;
+
+        cloneNode = el.cloneNode(deep);
+
+        // fix ie bug
+        // https://github.com/jquery/jquery/blob/master/src/manipulation.js#L157
+        if (nodeType === 1 || nodeType === 11 ) {
+            if (exports._fixCloneAttributes && nodeType === 1) {
+                exports._fixCloneAttributes(el, cloneNode);
+            }
+
+            if (deep && exports._fixCloneAttributes) {
+                handleDeep(cloneNode, el, exports._fixCloneAttributes);
+            }
+        }
+
+        // 其实还是克隆节点的事件处理，后续添加
+        return cloneNode;
+    };
+
+    exports._fixCloneAttributes = function (src, dest) {
+        var nodeName = src.nodeName.toLowerCase();
+        var type = (src.type || '').toLowerCase();
+        var srcChecked, srcValue;
+        // https://github.com/jquery/jquery/blob/master/src/manipulation.js#L137
+        if (nodeName === 'textarea') {
+            dest.defaultValue = src.defaultValue;
+            dest.value = src.value;
+        }
+        else if(nodeName === 'input' && (type === 'checkbox' || type === 'radio')) {
+            srcChecked = src.checked;
+            if (srcChecked) {
+                dest.defaultChecked = dest.checked = srcChecked;
+            }
+            srcValue = src.value;
+
+            if (dest.value !== srcValue) {
+                dest.value = srcValue;
+            }
+        }
+    };
+    /**
+     *
+     * @param {HTMLElement|String|HTMLElement[]}  selector
+     * @param {String|HTMLElement}   html
+     * @param {boolean} [execScript=false] True to look for and process scripts execScript
+     */
+    exports.html = function (selector, html, execScript) {
+        var els = dom.query(selector);
+        var el = els[0];
+        var item;
+        var success;
+        var valNode;
+        if (!el) {
+            return null;
+        }
+
+        // 直接返回html内容
+        if (html === undefined) {
+            if (el.nodeType === 1) {
+                return el.innerHTML;
+            }
+            return null;
+        }
+        else {
+            // see https://github.com/jquery/jquery/blob/master/src/manipulation.js#L418
+
+            html += '';
+            if (!/<(?:script|style|link)/i.test(html)
+                && !creatorsMap[( REG_TAG.exec(html) || ["", ""] )[1].toLowerCase()]
+            ) {
+                try {
+                    for (var i = 0, len = els.length; i < len; i++) {
+                        item = els[i];
+                        if (item.nodeType === 1) {
+                            dom.cleanData(getAll(item, '*'));
+                            item.innerHTML = html
+                        }
+                    }
+                    success = true;
+                } catch (e) {
+
+                }
+            }
+
+            if (!success) {
+                valNode = exports.create(html, el.ownerDocument);
+                exports.empty(els);
+                dom.append(els, valNode, execScript);
+            }
+        }
+
+
+    };
 
     /**
      * 将节点占位fragment
-     * @param {HTMLElement} nodes
+     * @param {HTMLElement[]} nodes
      * @returns {fragment} ret
+     * https://developer.mozilla.org/en-US/docs/Web/API/document.createDocumentFragment
      */
-    function nodeLitToFragment(nodes) {
+    exports.nodeListToFragment = function (nodes) {
         var ownerDoc;
         var ret = null;
 
@@ -122,7 +273,7 @@ define(function (require) {
             ret = ownerDoc.createDocumentFragment();
             nodes = util.makeArray(nodes);
 
-            for (var i= 0,len = nodes.length;i < len; i++) {
+            for (var i = 0, len = nodes.length; i < len; i++) {
                 ret.appendChild(nodes[i]);
             }
         }
@@ -130,12 +281,61 @@ define(function (require) {
             console.error('Unable to convert ' + nodes + ' to fragment.');
         }
         return ret;
+    };
+
+
+    /**
+     * @param {HTMLElement|String|HTMLElement[]} selector matched elements
+     */
+    exports.empty = function (selector) {
+        var els = dom.query(selector),
+            el, i;
+        for (i = els.length - 1; i >= 0; i--) {
+            el = els[i];
+            dom.remove(el.childNodes);
+        }
+    };
+
+    function getAll(el, tag) {
+        return el.getElementsByTagName(tag);
+    }
+
+    /**
+     * 对深度克隆节点进行处理
+     * @param {HTMLElement} el
+     * @param {HTMLElement} cloneNode
+     * @param {Function} fn
+     */
+    function handleDeep(el,cloneNode,fn) {
+
+        var eleNodeType = el.nodeType;
+
+        if (eleNodeType === 11) {
+            var child = el.childNodes;
+            var cloneChild = cloneNode.childNodes;
+            var findex = 0;
+            while(child[findex]) {
+                if (cloneChild[findex]) {
+                    handleDeep(child[findex], cloneChild[findex], fn);
+                }
+                findex++;
+            }
+        }
+        else if (eleNodeType === 1) {
+            var elChildren = getAll(el, '*');
+            var cloneCs = getAll(cloneNode, '*');
+            var cIndex = 0;
+            // 将所有的dom节点全部取出，避免每次查询遍历
+            while (elChildren[cIndex]){
+                if (cloneCs[cIndex]) {
+                    fn(elChildren[cIndex], cloneCs[cIndex]);
+                }
+                cIndex++;
+            }
+        }
 
     }
-    return {
-        create:create,
-        domify:create,
-        nodeLitToFragment:nodeLitToFragment
-    }
+
+    return exports;
 
 });

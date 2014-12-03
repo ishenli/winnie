@@ -30,7 +30,7 @@ define(function (require) {
             var t = Dom.create('<p>append node</p>');
             Dom.append(foo,t);
             // 因为node clone，导致插入的节点和被插入的节点不是同一个
-            // expect(foo.lastChild).toBe(t);
+            expect(foo.lastChild).toBe(t);
             expect(foo.lastChild.innerHTML).toBe(t.innerHTML);
             Dom.remove(foo);
             Dom.remove(t);

@@ -1,6 +1,6 @@
 /**
  * @file dom
- * @author shenli （meshenli@gmail.com）
+ * @author shenli <meshenli@gmail.com>
  */
 define(function (require) {
 
