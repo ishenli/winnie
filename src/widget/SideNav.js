@@ -1,23 +1,20 @@
 /**
  * @file 侧边导航
- * @author shenli （shenli03@baidu.com）
+ * @author shenli <meshenli@gmail.com>
  */
 
 define(function (require) {
 
-    var $ = require('jquery');
     var Widget = require('./Widget');
     var Blink = require('./sideNav/blink');
     var Normal = require('./sideNav/normal');
-    var lib = require('./lib');
-    var ua = (window.navigator.userAgent || '').toLowerCase();
-    var isIE6 = ua.indexOf('msie 6') !== -1;
+    var lib = require('../lib');
+    var util = require('../lib/util');
 
     /**
      * @constructor
      * @extends module:Widget
      * @requires Widget
-     * @requires jQuery
      * @requires lib
      * @exports SideNav
      * @example
@@ -52,9 +49,9 @@ define(function (require) {
          * 控件配置项
          *
          * @name module:SideNav#options
-         * @property {jQuery} element 控件标识
-         * @property {jQuery} top 回到顶部的节点
-         * @property {string} [effect=‘normal’] 出现效果，有normal，fade
+         * @property {HTMLElement|string} element 控件标识
+         * @property {HTMLElement|string} top 回到顶部的节点
+         * @property {string} [effect='normal'] 出现效果，有normal，fade
          * @property {number} [duration=600] 延迟毫秒数
          * @property {number} [throttle=100]  阀流
          * @property {boolean} [sticky=false]  是否悬浮固定
@@ -68,7 +65,7 @@ define(function (require) {
          * @property {Object} [when]  出现形式的配置
          * @property {number} [when.top]  内容滚动到距离窗口顶部一定的距离
          * @property {string} [when.type=1]  内容的出现形式,共分为4种，具体可看代码注释
-         * @property {jQuery} [when.node=null]  内容滚动到某个节点出现
+         * @property {HTMLElement|string} [when.node=null]  内容滚动到某个节点出现
          */
         options: {
 
@@ -87,7 +84,7 @@ define(function (require) {
                 }
             },
 
-            throttle: 100,
+            throttle: 1000,
 
             top: {
                 node: '.j-back-top'
@@ -128,8 +125,8 @@ define(function (require) {
              */
             map: {
                 enable: false,
-                currentPanelClass: 'ui-panel-current',
-                currentNavClass: 'ui-nav-current',
+                currentPanelClass: 'mp-panel-current',
+                currentNavClass: 'mp-nav-current',
                 // 转移到选中块的距离
                 gap: 0,
 
@@ -141,33 +138,30 @@ define(function (require) {
             }
         },
         init: function () {
-            this._initSideNav();
+            this._initDom();
             this._initEvent();
             this._initAnim();
-            this._initReset();
             this._initWhen();
+            this._initReset();
         },
-        /**
-         * 初始化SideNav对象
-         * @private
-         */
-        _initSideNav: function () {
-
+        _initDom:function() {
             var me = this;
-            // 存储jquery对象
-            this.$window = $(window);
-            this.$body = $('body,html');
+            this.$window = window;
 
             // 为了控制动画效果，添加一层wrap容器
-            var wrapperStr = ('<div class="mp-sidenav-cnt-wrap"></div>');
+            var wrapperNode = lib.create('<div class="mp-sidenav-cnt-wrap"></div>');
 
-            this.element.wrapInner(wrapperStr);
-            this.navNodeWrap = this.element.find('.mp-sidenav-cnt-wrap');
+            lib.wrapInner(this.element, wrapperNode);
+
+
+            this.navNodeWrap = lib.get('.mp-sidenav-cnt-wrap',this.element);
+
             if (!this.get('showAlways')) {
                 // 获取sideNav的宽高
-                this.navHeight = this.element.height();
-                this.navWidth = this.element.width();
-                this.navNodeWrap.css({
+                this.navHeight = lib.height(this.element);
+                this.navWidth = lib.width(this.element);
+
+                lib.css(this.navNodeWrap, {
                     'position': 'absolute',
                     'left': '0',
                     'right': '0',
@@ -179,7 +173,7 @@ define(function (require) {
                     'width': this.navWidth
                 });
 
-                this.element.css({
+                lib.css(this.element, {
                     'display': 'block',
                     'overflow': 'visible',
                     'width': this.navWidth,
@@ -190,9 +184,10 @@ define(function (require) {
             if (this.get('map').enable) {
                 this.navNodes = [];
                 this.panelNodes = [];
-                $.each(this.get('map').rule, function (key, value) {
-                    var domKey = me.element.find(key);
-                    var domValue = $(value);
+
+                util.each(this.get('map').rule, function (value, key) {
+                    var domKey = lib.get(key, me.element);
+                    var domValue = lib.get(value);
                     if (domKey && domValue) {
                         me.navNodes.push(domKey);
                         me.panelNodes.push(domValue);
@@ -200,14 +195,9 @@ define(function (require) {
                 });
             }
 
-            //是否支持sticky的功能
-            if (this.get('sticky') && !isIE6) {
-                this._initSticky();
-            }
-
             // 获取两个节点
-            this.whenElement = $(this.get('when').node);
-            this.topElement = $(this.get('top').node);
+            this.whenElement = lib.get(this.get('when').node);
+            this.topElement = lib.get(this.get('top').node);
 
         },
         /**
@@ -216,44 +206,43 @@ define(function (require) {
          */
         _initEvent: function () {
             var me = this;
-            this.delayFun = lib.throttle(this._scrollCallback, this.get('throttle'));
+            this.delayFun = util.throttle(this._scrollCallback, this.get('throttle'));
 
             // 绑定作用域到实例
-            this.$window.on('scroll', $.proxy(this.delayFun, this));
+            lib.on(this.$window, 'scroll', util.bind(this.delayFun, this));
 
-            if (this.topElement.length) {
-                this.topElement.on('click', function (e) {
+            if (this.topElement) {
+                lib.on(this.topElement, 'click', function (e) {
                     e.preventDefault();
-                    me.$body.animate({
-                        scrollTop: 0
-                    }, 500);
+                    me.$window.scrollTo(0, 0);
                 });
             }
 
             if (this.get('map').enable) {
                 var self = this;
                 // 绑定事件
-                $.each(me.navNodes, function (i, node) {
-                    node.on('click', function (e) {
+                util.each(me.navNodes, function (node, i) {
+                    lib.on(node, 'click', function (e) {
                         e.preventDefault();
                         var panel = me.panelNodes[i];
-                        var top = panel.offset().top;
+                        var top = lib.getPosition(panel).top;
                         me.isScrolling = true;
-                        me.$body.animate({
-                            scrollTop: top + self.get('map').gap
-                        }, 500, function () {
-                            me.isScrolling = false;
-
-                        });
+                        me.$window.scrollTo(0, top + self.get('map').gap);
+                        me.isScrolling = false;
                         // 变换导航的状态
                         var curNavCls = me.get('map').currentNavClass;
                         var curPanelCls = me.get('map').currentPanelClass;
-                        $('.' + curNavCls).removeClass(curNavCls);
-                        $('.' + curPanelCls).removeClass(curPanelCls);
-                        $(this).addClass(curNavCls);
-                        panel.addClass(curPanelCls);
+                        lib.removeClass('.' + curNavCls, curNavCls);
+                        lib.removeClass('.' + curPanelCls, curPanelCls);
+                        lib.addClass(this, curNavCls);
+                        lib.addClass(panel, curPanelCls);
                     });
                 });
+            }
+
+            //是否支持sticky的功能
+            if (this.get('sticky')) {
+                this._initSticky();
             }
         },
 
@@ -263,6 +252,8 @@ define(function (require) {
          */
         _scrollCallback: function () {
             var me = this;
+
+            console.log('is scrolling');
 
             // 如果正在滚动中，则不触发滚动回调
             if (me.isScrolling) {
@@ -283,7 +274,7 @@ define(function (require) {
 
                     //  滚到指定节点出现后显示
                     if (me.get('when').type === 2) {
-                        dir = me.whenElement.offset().top - me.$window.height();
+                        dir = lib.getPosition(me.whenElement).top - lib.height(me.$window);
                     }
 
                     if (scroll > dir) {
@@ -309,9 +300,9 @@ define(function (require) {
                 var minIndex = 0;
 
                 var gap = this.get('map').gap;
-                $.each(me.panelNodes, function (i, item) {
-                    var top = item.offset().top;
-                    var eleHeight = item.height();
+                util.each(me.panelNodes, function (item, i) {
+                    var top = lib.getPosition(item).top;
+                    var eleHeight = lib.height(item);
 
                     // 元素距离窗口顶部的距离，如果>=0，元素的头部在窗口的上方
                     // 即滚动的高度 > 元素距离文档顶部的距离
@@ -349,19 +340,19 @@ define(function (require) {
                 var minNode = me.panelNodes[minIndex];
 
                 // panel最底部
-                var panelBottom = maxNode.height() + maxNode.offset().top;
-                var panelTop = minNode.offset().top - me.$window.height();
+                var panelBottom = lib.height(maxNode) + lib.getPosition(maxNode).top;
+                var panelTop = lib.getPosition(minNode).top - lib.height(me.$window);
 
                 // 修改对应的样式
                 var curNavCls = me.get('map').currentNavClass;
                 var curPanelCls = me.get('map').currentPanelClass;
 
-                $('.' + curNavCls).removeClass(curNavCls);
-                $('.' + curPanelCls).removeClass(curPanelCls);
+                lib.removeClass('.' + curNavCls, curNavCls);
+                lib.removeClass('.' + curPanelCls, curPanelCls);
 
                 if (scroll < panelBottom && scroll > panelTop) {
-                    me.navNodes[targetIndex].addClass(curNavCls);
-                    me.panelNodes[targetIndex].addClass(curPanelCls);
+                    lib.addClass(me.navNodes[targetIndex], curNavCls);
+                    lib.addClass(me.panelNodes[targetIndex], curPanelCls);
                 }
 
             }
@@ -393,7 +384,7 @@ define(function (require) {
 
             var me = this;
             if (this.get('when').type === 3) {
-                lib.delay(function () {
+                util.delay(function () {
                     me.show();
                 }, this.get('when').delay);
             }
@@ -405,16 +396,16 @@ define(function (require) {
          * @private
          */
         _initSticky: function () {
-            var scrollTop = this.element.offset().top;
+            var scrollTop = lib.getPosition(this.element).top;
             var self = this;
-            this.stickyFun = lib.throttle(function () {
-                var option = self.$window.scrollTop() > scrollTop
+            this.stickyFun = util.throttle(function () {
+                var option = lib.getScrollTop() > scrollTop
                     ? 'addClass' : 'removeClass';
-                self.element[option]('mp-sticky');
+                lib[option](self.element,'mp-sticky');
 
             }, self.get('throttle'));
 
-            this.$window.on('scroll', this.stickyFun);
+            lib.on(this.$window, 'scroll', this.stickyFun);
         },
         /**
          * 出现
@@ -434,8 +425,8 @@ define(function (require) {
          * 销毁，解除window的滚动监听函数
          */
         dispose: function () {
-            this.$window.off('scroll', this.delayFun, true);
-            this.$window.off('scroll', this.stickyFun);
+            lib.off(this.$window, 'scroll', this.delayFun);
+            lib.off(this.$window, 'scroll', this.stickyFun);
             this.options = this.anim = null;
             SideNav.superClass.dispose.call(this);
         }

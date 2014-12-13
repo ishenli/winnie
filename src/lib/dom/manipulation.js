@@ -149,23 +149,28 @@ define(function (require) {
     /**
      * 给节点包裹另一个节点
      * wrapAll('<p>1</p>','<div></div>') == > <div><p>1</p></div>
-     * @param {HTMLElement|HTMLElement[]|String} wrappedNode set of matched elements
+     * @param {HTMLElement|HTMLElement[]|String} wrappedNodes set of matched elements
      * @param {HTMLElement|String} wrapperNode html node or selector to get the node wrapper
      */
-    exports.wrapAll = function (wrappedNode, wrapperNode) {
-        wrapperNode = wrapperNode.cloneNode(true);
-        if (wrappedNode.parentNode) {
-            exports.insertBefore(wrapperNode, wrappedNode);
+    exports.wrapAll = function (wrappedNodes, wrapperNode) {
+
+        wrapperNode = dom.clone(dom.get(wrapperNode),true);
+        wrappedNodes = dom.query(wrappedNodes);
+
+        if (wrappedNodes[0].parentNode){
+            // 先将包裹节点插入到被包裹节点的前面，之后再将被包裹的
+            // 节点放入其中
+            exports.insertBefore(wrapperNode, wrappedNodes[0]);
         }
 
         var c;
 
-        // 取到包裹节点的最里面的节点
+        // 取到包裹节点的最里面的节点, 因为被包裹的节点放在最里面那一层
         while ((c = wrapperNode.firstChild) && c.nodeType === 1) {
             wrapperNode = c;
         }
 
-        exports.append(wrapperNode, wrappedNode);
+        exports.append(wrapperNode, wrappedNodes);
     };
 
     /**
@@ -187,7 +192,9 @@ define(function (require) {
      * @param {HTMLElement} wrapperNode html node or selector to get the node wrapper
      */
     exports.wrapInner = function (wrappedNodes, wrapperNode) {
-        util.each(wrappedNodes, function (w) {
+
+        wrapperNode = dom.get(wrapperNode);
+        dom.query(wrappedNodes).each(function (w) {
             var contents = w.childNodes;
             if (contents.length) {
                 exports.wrapAll(contents, wrapperNode);

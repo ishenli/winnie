@@ -121,22 +121,21 @@ define(function (require) {
     }
 
     function createClassMethod (method) {
-        return function (element,classNames) {
-            element = dom.g(element);
+        return function (selector,classNames) {
             if (classNames === '') {
                 throw new Error('className must not be empty');
             }
 
 
-            if (!element || !classNames) {
-                return element;
-            }
-
             classNames = str2Array(classNames);
 
             var extArgs = slice.call(arguments, 2);
             // 因为exports的方法会拓展到dom上
-            exports[method].apply(exports, [element, classNames].concat(extArgs));
+            dom.query(selector).each(function (node) {
+                if (node.nodeType === 1) {
+                    exports[method].apply(exports, [node, classNames].concat(extArgs));
+                }
+            });
         };
     }
 

@@ -1,8 +1,10 @@
 /**
  * @file sideNav normal动画效果
- * @author ishenli （shenli03@baidu.com）
+ * @author ishenli <meshenli@gmail.com>
  */
-define(function () {
+define(function (require) {
+
+    var lib = require('../../lib');
 
     var resetCss = {
         'display': 'block'
@@ -18,16 +20,14 @@ define(function () {
     };
     var Normal = {
         show: function (ctx) {
-
-            ctx.navNodeWrap.css(showCss);
-
+            lib.css(ctx.navNodeWrap, showCss);
         },
         reset: function (ctx) {
-            ctx.navNodeWrap.css(resetCss);
+            lib.css(ctx.navNodeWrap, resetCss);
 
         },
         hide: function (ctx) {
-            ctx.navNodeWrap.css(hideCss);
+            lib.css(ctx.navNodeWrap, hideCss);
 
         }
     };

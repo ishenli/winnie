@@ -33,6 +33,8 @@ define(
             zoom: 1
         };
 
+        var cssShow = {position: 'absolute', visibility: 'hidden', display: 'block'};
+
         cssProps['float'] = 'cssFloat';
 
         /**
@@ -297,12 +299,20 @@ define(
         /**
          * 获取元素的宽高且忽略display属性
          * @param {HTMLElement} el 元素
-         * @param {string} name width 或 height
-         * @param {string} extra 盒子模型（padding，border，margin）
          * @return {string} 返回宽和高的值
          */
-        function getWHIgnoreDisplay(el, name, extra) {
-            return getWidthAndHeight.apply({}, arguments);
+        function getWHIgnoreDisplay(el) {
+            var val;
+            var args = arguments;
+            if (el.offsetWidth !==0) {
+                val = getWidthAndHeight.apply(undefined, arguments);
+            }
+            else {
+                processElement(el, cssShow, function () {
+                    val = getWidthAndHeight.apply(undefined, args);
+                });
+            }
+            return val;
         }
 
 
@@ -456,6 +466,31 @@ define(
             return key;
         }
 
+
+        /**
+         * 给元素添加样式进行调用，之后在重新加上原来的样式
+         * @param {HTMLElement} el
+         * @param {Object} css
+         * @param {Function} callback
+         */
+        function processElement(el, css, callback) {
+            var old = {},
+                style = el.style,
+                name;
+
+            // Remember the old values, and insert the new ones
+            for (name in css) {
+                old[ name ] = style[ name ];
+                style[ name ] = css[ name ];
+            }
+
+            callback.call(el);
+
+            // Revert the old values
+            for (name in css) {
+                style[ name ] = old[ name ];
+            }
+        }
 
         return exports;
     });

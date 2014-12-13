@@ -5,7 +5,7 @@
  * http://www.zhangxinxu.com/wordpress/?p=1907
  */
 define(
-    function (require) {
+    function () {
 
         var documentElement = document.documentElement;
         var body = document.body;

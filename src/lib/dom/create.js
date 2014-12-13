@@ -159,7 +159,7 @@ define(function (require) {
      */
     exports.clone = function (selector, deep) {
         var el = dom.get(selector);
-        if (el) {
+        if (!el) {
             return null;
         }
         var cloneNode;
@@ -179,7 +179,7 @@ define(function (require) {
             }
         }
 
-        // 其实还是克隆节点的事件处理，后续添加
+        // 其实还有克隆节点的事件处理，如克隆节点的click事件
         return cloneNode;
     };
 
