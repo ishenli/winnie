@@ -144,7 +144,7 @@ define(function (require) {
             this._initWhen();
             this._initReset();
         },
-        _initDom:function() {
+        _initDom: function () {
             var me = this;
             this.$window = window;
 
@@ -154,7 +154,7 @@ define(function (require) {
             lib.wrapInner(this.element, wrapperNode);
 
 
-            this.navNodeWrap = lib.get('.mp-sidenav-cnt-wrap',this.element);
+            this.navNodeWrap = lib.get('.mp-sidenav-cnt-wrap', this.element);
 
             if (!this.get('showAlways')) {
                 // 获取sideNav的宽高
@@ -253,17 +253,13 @@ define(function (require) {
         _scrollCallback: function () {
             var me = this;
 
-            console.log('is scrolling');
-
             // 如果正在滚动中，则不触发滚动回调
             if (me.isScrolling) {
                 return;
             }
             var dir = 0;
 
-            var scroll = document.body.scrollTop
-                || (document.documentElement
-                && document.documentElement.scrollTop);
+            var scroll = lib.getScrollTop();
 
             // 滚动一定的距离出现sideNav
             if (!me.get('showAlways')) {
@@ -401,7 +397,7 @@ define(function (require) {
             this.stickyFun = util.throttle(function () {
                 var option = lib.getScrollTop() > scrollTop
                     ? 'addClass' : 'removeClass';
-                lib[option](self.element,'mp-sticky');
+                lib[option](self.element, 'mp-sticky');
 
             }, self.get('throttle'));
 

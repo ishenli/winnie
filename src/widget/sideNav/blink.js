@@ -55,7 +55,7 @@ define(function (require) {
                 };
 
                 lib.css(ctx.navNodeWrap, anim);
-            });
+            }, 10);
 
         },
         hide: function (ctx) {
@@ -67,7 +67,7 @@ define(function (require) {
                 if (!isAnimRunning) {
                     lib.hide(ctx.element);
                 }
-            });
+            }, ctx.get('duration'));
 
         }
     };
