@@ -172,7 +172,7 @@ define(function (require) {
 
     var DomEventObject = baseObject.extend({
 
-        initialize:function(originalEvent) {
+        initialize: function (originalEvent) {
 
             var self = this;
             if (!arguments.length || !originalEvent) {
@@ -182,7 +182,6 @@ define(function (require) {
             DomEventObject.superClass.initialize.call(this);
 
 
-
             var isNative = (typeof originalEvent.stopPropagation === 'function') ||
                 (typeof originalEvent.cancelBubble === 'boolean');
             var type = originalEvent.type;
@@ -190,12 +189,16 @@ define(function (require) {
             this.originalEvent = originalEvent;
 
             var isDefaultPrevented = retFalse;
+
+
             if ('defaultPrevented' in originalEvent) {
                 isDefaultPrevented = originalEvent.defaultPrevented ? retTrue : retFalse;
-            } else if ('getPreventDefault' in originalEvent) {
+            }
+            else if ('getPreventDefault' in originalEvent) {
                 // https://bugzilla.mozilla.org/show_bug.cgi?id=691151
                 isDefaultPrevented = originalEvent.getPreventDefault() ? retTrue : retFalse;
-            } else if ('returnValue' in originalEvent) {
+            }
+            else if ('returnValue' in originalEvent) {
                 isDefaultPrevented = originalEvent.returnValue === FALSE ? retTrue : retFalse;
             }
 
@@ -207,33 +210,31 @@ define(function (require) {
             var props = commonProps.concat();
 
             // 统一event对象的type
-            if (isNative) {
-                util.each(typeFixers, function (typeFixer) {
-                    if (type.match(typeFixer.reg)) {
+            util.each(typeFixers, function (typeFixer) {
+                if (type.match(typeFixer.reg)) {
 
-                        props = props.concat(typeFixer.props);
+                    props = props.concat(typeFixer.props);
 
-                        if (typeFixer.fix) {
-                            typeFixerMap.push(typeFixer.fix);
-                        }
+                    if (typeFixer.fix) {
+                        typeFixerMap.push(typeFixer.fix);
                     }
-                });
-
-                len = props.length;
-
-                // 复制原生事件的属性到事件对象
-                while (len) {
-                    prop = props[--len];
-                    this[prop] = originalEvent[prop];
                 }
+            });
 
-                len = typeFixerMap.length;
+            len = props.length;
 
-                // fix props
-                while (len) {
-                    fixer = typeFixerMap[--len];
-                    fixer(this, originalEvent);
-                }
+            // 复制原生事件的属性到事件对象
+            while (len) {
+                prop = props[--len];
+                this[prop] = originalEvent[prop];
+            }
+
+            len = typeFixerMap.length;
+
+            // fix props
+            while (len) {
+                fixer = typeFixerMap[--len];
+                fixer(this, originalEvent);
             }
 
             if (!self.target && isNative) {
@@ -255,14 +256,15 @@ define(function (require) {
             // if preventDefault exists run it on the original event
             if (e.preventDefault) {
                 e.preventDefault();
-            } else {
+            }
+            else {
                 // otherwise set the returnValue property of the original event to FALSE (IE)
                 e.returnValue = FALSE;
             }
 
             DomEventObject.superClass.preventDefault.call(self);
         },
-        stopPropagation: function() {
+        stopPropagation: function () {
             var e = this.originalEvent;
             if (e.stopPropagation) {
                 e.stopPropagation();

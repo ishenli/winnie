@@ -1,7 +1,8 @@
 /**
  * @file 事件对象
- * @author shenli （meshenli@gmail.com）
+ * @author shenli <meshenli@gmail.com>
  */
+
 define(function (require) {
     var util = require('../util');
     var features = require('./features');

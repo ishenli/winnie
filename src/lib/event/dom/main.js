@@ -26,7 +26,7 @@ define(function (require) {
 
         // 如果该domEventCache没有监听的handler
         if (!(handler = domEventCacheHolder.handler)) {
-            handler = domEventCacheHolder.handler = function(event) {
+            handler = domEventCacheHolder.handler = function (event) {
                 var type = event.type;
                 var domEventCache;
                 var currentTarget = handler.currentTarget;
@@ -89,10 +89,10 @@ define(function (require) {
 
     }
 
-    function on(element, events, selector, fn, context) {
+    function on(element, events, selector, fn, data, context) {
         var els = dom.query(element);
 
-        eventUtil.batchByType(function (els, type, selector, fn, context) {
+        eventUtil.batchByType(function (els, type, selector, fn, data, context) {
             // normalizeParams 处理委托的情况还有问题
             var options = eventUtil.normalizeParams(type, selector, fn, context);
             var i;
@@ -102,7 +102,7 @@ define(function (require) {
                 el = els[i];
                 createEventObserver(el, type, options);
             }
-        }, 1, els, events, selector, fn, context);
+        }, 1, els, events, selector, fn, data, context);
     }
 
     /**
@@ -111,12 +111,14 @@ define(function (require) {
      * @param {string|object} events
      * @param {string} selector
      * @param {Function} fn
+     * @param {object} data
      * @param {object} context
      */
-    function off(element, events, selector, fn, context) {
+    function off(element, events, selector, fn, data, context) {
         var els = dom.query(element);
 
-        eventUtil.batchByType(function (els, type, selector, fn, context) {
+        eventUtil.batchByType(function (els, type, selector, fn, data, context) {
+
             // normalizeParams 处理委托的情况还有问题
             var options = eventUtil.normalizeParams(type, selector, fn, context);
             var i;
@@ -129,12 +131,12 @@ define(function (require) {
 
                 if (options.deep && el.getElementsByTagName) {
                     children = el.getElementsByTagName('*');
-                    for (var j=children.length - 1;j >= 0;j--) {
+                    for (var j = children.length - 1; j >= 0; j--) {
                         removeEventObserver(children[j], type, options);
                     }
                 }
             }
-        }, 1, els, events, selector, fn, context);
+        }, 1, els, events, selector, fn, data, context);
     }
 
     /**
@@ -143,7 +145,7 @@ define(function (require) {
      * @param type
      * @param options
      */
-    function removeEventObserver(currentTarget,type,options) {
+    function removeEventObserver(currentTarget, type, options) {
         options = util.merge(options);
         var domEventCacheHolder;
         var domEventObserverCache;
@@ -171,10 +173,48 @@ define(function (require) {
             domEventObserveItem.off(options);
         }
     }
-    var domEvent = {
-        on: on,
-        off: off
-    };
 
-    return domEvent;
+    /**
+     *
+     * @param {HTMLElement|HTMLElement[]|String} selector
+     * @param types
+     * @param data
+     */
+    function fire(selector, types, data) {
+        var finalRet;
+
+        eventUtil.splitAndRun(types, function (type) {
+            var targets;
+            var target;
+            var domEventCache;
+            var ret;
+            targets = dom.query(selector);
+            for (var len = targets.length - 1; len >= 0 ; len--) {
+                target = targets[len];
+                domEventCache = DomEventCache.getDomEventCache(targets, type);
+                if (!domEventCache) {
+                    domEventCache = new DomEventCache({
+                        type:type,
+                        currentTarget:target
+                    });
+                }
+
+                if (domEventCache) {
+                    ret = domEventCache.fire(data);
+                    if (finalRet !== false && ret !== undefined) {
+                        finalRet = ret;
+                    }
+                }
+            }
+        });
+
+        return finalRet;
+    }
+
+
+    return {
+        on: on,
+        off: off,
+        fire:fire
+    };
 });

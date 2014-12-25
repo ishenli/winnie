@@ -4,7 +4,7 @@
  */
 define(function(require) {
 
-    var UA = require('component/ua');
+    var UA = require('lib/ua');
 
     describe('ua', function () {
         if (!UA.ie) {

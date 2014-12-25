@@ -1,7 +1,8 @@
 /**
  * @file event
- * @author shenli （meshenli@gmail.com）
+ * @author shenli <meshenli@gmail.com>
  */
+
 define(function (require) {
 
     var util = require('../util');
@@ -24,7 +25,7 @@ define(function (require) {
     var win = window;
 
     /**
-     * 事件监听函数
+     * 事件主监听函数
      * @param {Event} event 原生的事件对象
      * @param {string} type 事件类型
      */
@@ -66,13 +67,13 @@ define(function (require) {
 
     /**
      * 绑定事件
-     * @param element
-     * @param events
-     * @param selector
-     * @param fn
-     * @param context
+     * @param {HTMLElement|HTMLElement[]|string}element
+     * @param {string} events
+     * @param {string} selector
+     * @param {Function} fn
+     * @param {*} context
      */
-    function on(element, events, selector, fn, context) {
+    function add(element, events, selector, fn, context) {
         var type;
         var originalFn;
         var args; // 传入的参数
@@ -87,10 +88,11 @@ define(function (require) {
                   'focus blur': function (e) {}
                 },context);
          */
+
         if (selector === undefined && util.isObject(events)) {
             for (type in events) {
                 if (events.hasOwnProperty(type)) {
-                    on.call(element, element, type, events[type]);
+                    add.call(element, element, type, events[type]);
                 }
             }
             return;
@@ -312,17 +314,6 @@ define(function (require) {
     }
 
     /**
-     * 注销委托的事件
-     * @param element
-     * @param types
-     * @param selector
-     * @param fn
-     */
-    function undelegate(element, types, selector, fn) {
-
-    }
-
-    /**
      * 触发事件，要区分W3C和IE事件
      * @type {Function}
      */
@@ -377,20 +368,23 @@ define(function (require) {
     }
 
     function once() {
-        return on.apply(ONE, arguments);
+        return add.apply(ONE, arguments);
+    }
+
+    function on(element, events, selector, fn, context) {
+        dom.query(element).each(function (el) {
+            add(el, events, selector, fn, context);
+        });
     }
 
 
     return {
         on: on,
-//        add: add,
         once: once,
         one: once,
         off: off,
         detach: off,
-//        clone: clone,
         fire: fire,
         Event: Event
     };
-
 });

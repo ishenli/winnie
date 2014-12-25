@@ -8,7 +8,7 @@ define(function (require) {
 
     var dom = require('../../dom');
     var doc = document;
-    var GUID = '_winnie_event' + (new Date()); // 保证dom节点的上observerCache的key唯一
+    var GUID = '_winnie_event_' + (new Date().toString(32)); // 保证dom节点的上observerCache的key唯一
 
     var addEventListener = doc && doc.addEventListener
         ? function (el, type, handler, capture) {
@@ -42,7 +42,7 @@ define(function (require) {
             return dom.data(node, GUID, value);
         },
         removeData:function(node) {
-            return dom.removeData(node, GUID);
+            return dom.deleteData(node, GUID);
         }
     };
 });

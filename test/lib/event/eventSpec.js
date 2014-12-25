@@ -3,10 +3,10 @@
  * @author shenli （meshenli@gmail.com）
  */
 define(function (require) {
-    var DomEvent = require('lib/event');
+    var DomEvent = require('lib/event/dom/main');
     var util = require('lib/util');
     var dom = require('lib/dom');
-    var Dom = require('lib/dom');
+
     var $ = require('jquery');
     var tpl = '';
 
@@ -22,19 +22,21 @@ define(function (require) {
         }
     });
 
+    simulate = function (target, type, relatedTarget) {
+        if (typeof target === 'string') {
+            target = dom.g(target);
+        }
+        simulateEvent(target, type, {relatedTarget: relatedTarget || window});
+    };
+
     describe('event', function () {
         var doc = document,
             HAPPENED = 'happened',
             FIRST = '1',
             SECOND = '2',
-            SEP = '-',
+            SEP = '-';
         // simulate mouse event on any element
-            simulate = function (target, type, relatedTarget) {
-                if (typeof target === 'string') {
-                    target = dom.g(target);
-                }
-                simulateEvent(target, type, {relatedTarget: relatedTarget || window});
-            };
+
 
         beforeEach(function () {
             document.body.appendChild(dom.create(tpl));
@@ -46,7 +48,7 @@ define(function (require) {
 
         describe('add event', function () {
             it('should execute in order.', function (done) {
-                var a = Dom.g('#link-a');
+                var a = dom.g('#link-a');
                 var result = [];
                 DomEvent.on(a, 'click', function () {
                     result.push(FIRST);
@@ -68,7 +70,7 @@ define(function (require) {
         describe('remove event', function () {
 
             it('should remove the specified event handler function.', function (done) {
-                var f = Dom.get('#link-f');
+                var f = dom.get('#link-f');
                 var result = [];
 
                 function foo() {
@@ -92,52 +94,50 @@ define(function (require) {
                     done();
                 }, 0);
             });
+        });
 
-
-
-           it('should remove all the event handlers of the specified event type.', function (done) {
-                var g = Dom.get('#link-g');
-                var result = [];
-                DomEvent.on(g, 'click', function () {
-                    result.push(FIRST);
-                });
-                DomEvent.on(g, 'click', function () {
-                    result.push(SECOND);
-                });
-
-                DomEvent.remove(g, 'click');
-
-                // click g
-                result = [];
-                simulate(g, 'click');
-                setTimeout(function () {
-                    expect(result.join(SEP)).toEqual([].join(SEP));
-                    done();
-                }, 0);
+        it('should remove all the event handlers of the specified event type.', function (done) {
+            var g = dom.get('#link-g');
+            var result = [];
+            DomEvent.on(g, 'click', function () {
+                result.push(FIRST);
+            });
+            DomEvent.on(g, 'click', function () {
+                result.push(SECOND);
             });
 
-            it('should remove all the event handler of the specified element', function (done) {
-                var h = Dom.get('#link-h');
+            DomEvent.off(g, 'click');
 
-                var result = [];
+            // click g
+            result = [];
+            simulate(g, 'click');
+            setTimeout(function () {
+                expect(result.join(SEP)).toEqual([].join(SEP));
+                done();
+            }, 0);
+        });
 
-                DomEvent.on(h, 'click', function () {
-                    result.push(FIRST);
-                });
+        it('should remove all the event handler of the specified element', function (done) {
+            var h = dom.get('#link-h');
 
-                DomEvent.on(h, 'click', function () {
-                    result.push(SECOND);
-                });
+            var result = [];
 
-                DomEvent.remove(h);
+            DomEvent.on(h, 'click', function () {
+                result.push(FIRST);
+            });
 
-                // click h
-                result = [];
-                simulate(h, 'click');
-                setTimeout(function () {
-                    expect(result.join(SEP)).toEqual([].join(SEP));
-                    done();
-                }, 0);
+            DomEvent.on(h, 'click', function () {
+                result.push(SECOND);
+            });
+
+            DomEvent.off(h);
+
+            // click h
+            result = [];
+            simulate(h, 'click');
+            setTimeout(function () {
+                expect(result.join(SEP)).toEqual([].join(SEP));
+                done();
             });
         });
 
@@ -145,7 +145,7 @@ define(function (require) {
 
             it('should treat the element itself as the context.', function () {
 
-                var foo = Dom.get('#foo');
+                var foo = dom.get('#foo');
 
                 DomEvent.on(foo, 'click', function () {
                     expect(this).toBe(foo);
@@ -157,7 +157,7 @@ define(function (require) {
 
             it('should support using custom object as the context.', function () {
 
-                var bar = Dom.get('#bar'),
+                var bar = dom.get('#bar'),
                     TEST = {
                         foo: 'only for tesing'
                     };
@@ -172,7 +172,7 @@ define(function (require) {
                 DomEvent.on(doc, 'click', handler, {id: SECOND});
                 var result = [];
 
-                function handler(e,args) {
+                function handler(e, args) {
                     result.push(args.id);
                 }
 
@@ -185,5 +185,7 @@ define(function (require) {
             });
 
         });
+
     });
+
 });

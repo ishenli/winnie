@@ -32,7 +32,7 @@ define(function (require) {
         // 阻止默认行为
         isDefaultPrevented: returnFalse,
 
-        // 阻止魔炮
+        // 阻止冒泡
         isPropagationStopped: returnFalse,
 
         // 立即停止

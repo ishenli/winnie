@@ -1,12 +1,12 @@
 /**
  * @file observable
- * @author ishenli （meshenli@gmail.com）
+ * @author ishenli <meshenli@gmail.com>
  */
 define(function () {
 
     /**
      * 存储Observer
-     * @type {{}}
+     * @type Object
      */
     var entryList = {};
 

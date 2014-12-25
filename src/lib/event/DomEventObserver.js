@@ -1,6 +1,6 @@
 /**
  * @file observer for dom event
- * @author ishenli （meshenli@gmail.com）
+ * @author ishenli <meshenli@gmail.com>
  */
 define(function (require) {
 

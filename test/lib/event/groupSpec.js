@@ -4,13 +4,10 @@
  */
 define(function (require) {
     var Dom = require('lib/dom');
-    var Event = require('lib/event/domEvent');
+    var Event = require('lib/event/dom/main');
     var util = require('lib/util');
     var $ = require('jquery');
-    /*jshint quotmark:false*/
-    var
-// simulate mouse event on any element
-        simulate = function (target, type, relatedTarget) {
+    var simulate = function (target, type, relatedTarget) {
             target = Dom.get(target);
             simulateEvent(target, type, { relatedTarget: relatedTarget });
         };
@@ -41,7 +38,7 @@ define(function (require) {
                     ret.push(2);
                 });
                 // 只删去属于 two 组的 click handler
-                Event.detach(g[0],"click.two");
+                Event.off(g[0],"click.two");
                 simulate(g[0], 'click');
                 setTimeout(function () {
                     expect(ret).toEqual([3]);
@@ -60,7 +57,7 @@ define(function (require) {
                     ret.push(1);
                 });
 
-                Event.detach(g[0],"click.two");
+                Event.off(g[0],"click.two");
                 simulate(g[0], 'click');
                 setTimeout(function () {
                     expect(ret).toEqual([3]);
@@ -79,7 +76,7 @@ define(function (require) {
                     ret.push(1);
                 });
                 // 删除 two 组和 one 组 的 click handler
-                Event.detach(g[0],"click.two click.one");
+                Event.off(g[0],"click.two click.one");
                 simulate(g[0], 'click');
                 setTimeout(function () {
                     expect(ret).toEqual([3]);
@@ -98,7 +95,7 @@ define(function (require) {
                     ret.push(1);
                 });
                 // 删除所有事件的 two 组和 one 组
-                Event.detach(g[0],".two .one");
+                Event.off(g[0],".two .one");
                 simulate(g[0], 'click');
                 setTimeout(function () {
                     expect(ret).toEqual([3]);
@@ -117,7 +114,7 @@ define(function (require) {
                     ret.push(1);
                 });
                 // 删除既属于 two 组又属于 one 组的所有事件的 handler
-                Event.detach(g[0],".two.one");
+                Event.off(g[0],".two.one");
                 simulate(g[0], 'click');
                 setTimeout(function () {
                     expect(ret).toEqual([1, 3]);
@@ -138,7 +135,7 @@ define(function (require) {
                     ret.push(2);
                 });
 
-                Event.detach(g[0],"click.one");
+                Event.off(g[0],"click.one");
                 simulate(g[0], 'click');
                 setTimeout(function () {
                     expect(ret).toEqual([2, 3]);
@@ -173,7 +170,7 @@ define(function (require) {
                     ret.push(2);
                 });
                 // 只删去属于 two 组的 click handler
-                Event.detach(g[0],"click.two");
+                Event.off(g[0],"click.two");
                 Event.fire(g[0],'click');
                     expect(ret).toEqual([3]);
             });
@@ -264,7 +261,7 @@ define(function (require) {
                     ret.push(1);
                 });
 
-                Event.detach(g[0],"click.two");
+                Event.off(g[0],"click.two");
                 Event.fire(g[0],'click');
                 setTimeout(function () {
                     expect(ret).toEqual([3]);
@@ -282,7 +279,7 @@ define(function (require) {
                     ret.push(1);
                 });
                 // 删除 two 组和 one 组 的 click handler
-                Event.detach(g[0],"click.two click.one");
+                Event.off(g[0],"click.two click.one");
                 Event.fire(g[0],'click');
                     expect(ret).toEqual([3]);
             });
@@ -298,7 +295,7 @@ define(function (require) {
                     ret.push(1);
                 });
                 // 删除所有事件的 two 组和 one 组
-                Event.detach(g[0],".two .one");
+                Event.off(g[0],".two .one");
                 Event.fire(g[0],'click');
                 expect(ret).toEqual([3]);
             });
@@ -314,7 +311,7 @@ define(function (require) {
                     ret.push(1);
                 });
                 // 删除既属于 two 组又属于 one 组的所有事件的 handler
-                Event.detach(g[0],".two.one");
+                Event.off(g[0],".two.one");
                 Event.fire(g[0],'click');
                 expect(ret).toEqual([1, 3]);
             });
@@ -332,7 +329,7 @@ define(function (require) {
                     ret.push(2);
                 });
 
-                Event.detach(g[0],"click.one");
+                Event.off(g[0],"click.one");
                 Event.fire(g[0],'click');
                 expect(ret).toEqual([2, 3]);
             });

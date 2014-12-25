@@ -7,9 +7,6 @@ define(function (require) {
 
     var util = require('../../util');
 
-    var NAMESPACE_REG = /[^\.]*(?=\..*)\.|.*/;
-    var NAME_REG = /\..*/;
-
     var exports = {};
 
 
@@ -20,22 +17,29 @@ define(function (require) {
      */
     exports.getTypeNamespace = function (type) {
         // 没有命名空间
-        if (type.indexOf('.' < 0)) {
+        if (type.indexOf('.') < 0) {
             return [type, ''];
         }
-        var ret = [];
-
-        var index = type.indexOf('.');
-        ret.push(type.substr(0, index));
-
-        var namespace = type.replace(NAMESPACE_REG, '');
-
-        return ret.concat(namespace); // ['click','a','b']
+        var m = type.match(/([^.]+)?(\..+)?$/),
+            t = m[1],
+            ret = [t],
+            ns = m[2];
+        if (ns) {
+            // 这个sort是为了进行namespace通过正则匹配
+            // 如'.a.b.c' 和 '.a.c.d.b'
+            // off('.b.c') 和 off('.a.b'）
+            // 通过同一个正则 /.*\.a.*\.b(?:\.|$)/ 匹配
+            ns = ns.split('.').sort();
+            ret.push(ns.join('.'));
+        } else {
+            ret.push('');
+        }
+        return ret;
 
     };
 
     /**
-     * 将参数的进行隔阂实话，兼容多重参数形式，
+     * 将参数的进行normalize，兼容多重参数形式，
      * 参考http://api.jquery.com/on/ 的传参方式
      * @param type
      * @param selector
@@ -112,6 +116,22 @@ define(function (require) {
         }
     };
 
+    /**
+     *
+     * @param {string} namespace
+     * @returns {RegExp}
+     */
+    exports.getNamespaceReg = function(namespace) {
+        // 分组捕获
+        // http://msdn.microsoft.com/zh-cn/library/az24scfc(v=vs.110).aspx
+        return new RegExp(namespace.split('.').join('.*\\.') + '(?:\\.|$)');
+    };
+
+    /**
+     *
+     * @param {Array.<string>|string} type
+     * @param {Function} fn
+     */
     function splitAndRun(type, fn) {
         if (util.isArray(type)) {
             util.each(type, fn);
@@ -126,5 +146,6 @@ define(function (require) {
         }
     }
 
+    exports.splitAndRun = splitAndRun;
     return exports;
 });

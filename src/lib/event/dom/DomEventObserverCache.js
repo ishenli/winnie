@@ -6,7 +6,10 @@
 define(function (require) {
     var ObserverCache = require('../base/ObserverCache');
     var DomEventUtils = require('./util');
+    var BaseUtil = require('../base/util');
+    var util = require('../../util');
     var special = require('./special');
+    var DomEventObject = require('./DomEventObject');
     var DomEventObserver = require('./DomEventObserver');
 
     var DomEventObserverCache = ObserverCache.extend({
@@ -60,17 +63,22 @@ define(function (require) {
             var fn = options.fn;
             var context = options.context;
             var currentTarget = me.currentTarget;
+            var namespace = options.namespace;
+            var namespaceReg;
             if (!observers.length) {
                 return;
             }
 
+            if (namespace) {
+                namespaceReg = BaseUtil.getNamespaceReg(namespace);
+            }
             var observerItem;
             var observerOptions;
             var observerContext;
             var newObservers = [];
 
             // 如果传入的了函数，需要作为判断删除的一个条件
-            if (fn) {
+            if (fn || namespaceReg) {
                 context = context || currentTarget;
                 for (var i = 0, j = 0, len = observers.length; i < len; ++i) {
                     observerItem = observers[i];
@@ -78,7 +86,10 @@ define(function (require) {
                     observerContext = observerOptions.context || currentTarget;
 
                     // 执行删除的对象跟observer中的不同，则不删除
-                    if (context !== observerContext || (fn && fn !== observerOptions.fn)) {
+                    if (context !== observerContext
+                        || (fn && fn !== observerOptions.fn)
+                        || (namespaceReg && !observerOptions.namespace.match(namespaceReg))
+                    ) {
                         newObservers[j++] = observerItem;
                     }
                     else {
@@ -114,7 +125,7 @@ define(function (require) {
             if (delegateCount < observers.length) {
                 allObservers.push({
                     currentTarget: currentTarget,
-                    currentTargetObservers: observers.splice(delegateCount)
+                    currentTargetObservers: observers.slice(delegateCount)
                 });
             }
 
@@ -141,6 +152,117 @@ define(function (require) {
 
             return finalResult;
 
+        },
+        /**
+         * fire要处理冒泡的情况
+         * @param event
+         */
+        fire: function (event) {
+            event = event || {};
+            var me = this;
+            var type = me.type;
+            var domEventCache;
+            var win = window;
+            var currentTarget = me.currentTarget;
+            var bubbles = true;
+            var ret;
+            var finalResult;
+            var eventData;
+            var onType = 'on' + type;
+            event.currentTarget = currentTarget;
+            event.target = event.target || currentTarget;
+
+            var current = currentTarget;
+
+            var eventPath = [];
+            var bubbleIndex = 0;
+
+            if (!event.isEventObject){
+                eventData = event;
+                event = new DomEventObject({
+                    'type': type
+                });
+                util.mix(event, eventData);
+            }
+
+            // 拿到冒泡行为上的所有节点
+            do {
+                eventPath.push(current);
+                current = current.parentNode || current.ownerDocument || (current === win.document) && win;
+
+            } while (current && bubbles);
+
+
+            current = eventPath[bubbleIndex];
+
+            // 对每个的节点observer进行notify
+            do {
+                event.currentTarget = current;
+                domEventCache = DomEventObserverCache.getDomEventCache(current, type);
+
+                if (domEventCache) {
+                    ret = domEventCache.notify(event);
+
+                    if (ret !== undefined && finalResult !== false) {
+                        finalResult = ret;
+                    }
+                }
+
+                if (current[onType] && current[onType].call(event) === false) {
+                    event.preventDefault();
+                }
+
+                current = eventPath[++bubbleIndex];
+
+            } while (current && !event.isPropagationStopped());
+
+
+            // 还是要调用原生的事件
+            if (!event.isDefaultPrevented()) {
+
+                try {
+                    if (currentTarget[type] && !util.isWindow(currentTarget)) {
+                        DomEventObserverCache.triggeredEvent = type;
+
+                        currentTarget[type]();
+                    }
+                }
+                catch (e) {
+                    console.error('event:' + e);
+                }
+
+                DomEventObserverCache.triggeredEvent = '';
+            }
+
+
+            return finalResult;
+
+        },
+        /**
+         * 检查ObserverCache的状态
+         * 1.如果没有observers，则delete ObserverCache
+         */
+        checkStatus:function() {
+            var me = this;
+            var currentTarget = this.currentTarget;
+            var eventCache = DomEventUtils.data(currentTarget);
+            var domEventObserverCahce;
+            var type = this.type;
+            var handler;
+            if (eventCache) {
+                domEventObserverCahce = eventCache.observerCache;
+                // cache中observers中为空
+                if (!me.hasObserver()) {
+                    handler = eventCache.handler;
+                    DomEventUtils.removeEventListener(currentTarget,type,handler);
+                    delete domEventObserverCahce[type];
+                }
+
+                if (util.isEmptyObject(domEventObserverCahce)) {
+                    eventCache.handler = null;
+                    DomEventUtils.removeData(currentTarget);
+                }
+            }
         }
 
 
