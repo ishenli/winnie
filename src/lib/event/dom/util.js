@@ -6,7 +6,7 @@
 
 define(function (require) {
 
-    var dom = require('../../dom');
+    var dom = require('../../dom/data');
     var doc = document;
     var GUID = '_winnie_event_' + (new Date().toString(32)); // 保证dom节点的上observerCache的key唯一
 

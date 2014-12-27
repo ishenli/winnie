@@ -6,7 +6,6 @@ define(function (require) {
 
     var dom = require('./base');
     var util = require('../util');
-
     var R_SCRIPT_TYPE = /^$|\/(?:java|ecma)script/i;
 
     var exports = {};
@@ -20,12 +19,23 @@ define(function (require) {
 
         element = dom.query(element);
 
-
         var parent;
-
+        var all;
         util.each(element, function (ele) {
             parent = ele.parentNode;
+            if (ele.nodeType === 1) {
+                all = util.makeArray(ele.getElementsByTagName('*'));
+                all.push(ele);
+                dom.deleteData(ele);
+                // 同步在这里会跪
+                require(['../event/dom/main'], function (event) {
+                    if (event) {
+                        event.off(all);
+                    }
+                });
+            }
             parent && parent.removeChild(ele);
+
         });
     };
 

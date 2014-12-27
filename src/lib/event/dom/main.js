@@ -26,14 +26,19 @@ define(function (require) {
 
         // 如果该domEventCache没有监听的handler
         if (!(handler = domEventCacheHolder.handler)) {
+
+            // 主监听函数
             handler = domEventCacheHolder.handler = function (event) {
                 var type = event.type;
                 var domEventCache;
                 var currentTarget = handler.currentTarget;
 
-                if (DomEventCache.triggerEvent === type) {
+                // 被浏览器事件调用的时候会用到,如ele.click();
+                // 在fire()中赋值的
+                if (DomEventCache.triggeredEvent === type) {
                     return undefined;
                 }
+
                 domEventCache = DomEventCache.getDomEventCache(currentTarget, type);
                 if (domEventCache) {
                     event.currentTarget = currentTarget;
@@ -51,7 +56,7 @@ define(function (require) {
         /**
          * 包含关系
          * observerCache 是设置在dom节点上的数据
-         * node.data('guid')  => observerCache
+         * node.data('guid')  => domEventCacheHolder
          * domEventCacheHolder.observerCache = {
          *      'click': new DomEventCache()
          * }

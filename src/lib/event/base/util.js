@@ -48,7 +48,6 @@ define(function (require) {
      * @param context
      */
     exports.normalizeParams = function (type, selector, fn, data, context) {
-        var options = selector || {};
 
         if (util.isFunction(fn) && util.isString(selector)) {
             options = {
@@ -65,8 +64,11 @@ define(function (require) {
                 context: data
             };
         }
-        else {
-            options = util.merge(options)
+        else  if (util.isObject(fn)){
+            options = util.merge({
+                selector:selector,
+                data:fn
+            })
         }
 
         var typeNamespace = exports.getTypeNamespace(type);

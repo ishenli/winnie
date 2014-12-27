@@ -5,8 +5,8 @@
 define(function (require) {
 
     var Dom = require('lib/dom');
-    //var Event = require('lib/event');
-    var Event = require('bean');
+    var Event = require('lib/event/dom/main');
+    //var Event = require('bean');
     var $ = require('jquery');
     var async = require('async');
     var tpl = '';
@@ -46,7 +46,7 @@ define(function (require) {
 
     describe('delegate', function () {
 
-        /*it('should invoke correctly', function (done) {
+        it('should invoke correctly', function (done) {
             var ret = [];
 
             function test(e) {
@@ -174,7 +174,9 @@ define(function (require) {
             // support native dom event
 
             Event.fire(a, 'click');
-
+            //simulateEvent(a, 'click', {
+            //    which: 1
+            //});
             setTimeout(function () {
                 expect(ret + '').toBe([a.id,
                     'test-delegate-inner',
@@ -187,11 +189,12 @@ define(function (require) {
             }, 10);
         });
 
-        it('should undelegate properly', function (done) {
+       it('should undelegate properly', function (done) {
             var d = Dom.create('<div><button>xxxx</button></div>');
             document.body.appendChild(d);
             var s = Dom.get('button', d);
             var ret = [];
+
             Event.on(d, 'click', function () {
                 ret.push(9);
             });
@@ -206,7 +209,7 @@ define(function (require) {
             async.series([
                 waits(10),
                 runs(function () {
-                    expect(ret).toEqual([9,1]);
+                    expect(ret).toEqual([1,9]);
                     ret = [];
                 }),
                 runs(function () {
@@ -235,11 +238,11 @@ define(function (require) {
                 }),
                 waits(10),
                 runs(function () {
-                    expect(ret).toEqual([1]);
+                    expect(ret).toEqual([9]);
                     Dom.remove(d);
                 })
             ], done);
-        });*/
+        });
 
 
         it('delegate events in one dom ', function (done) {

@@ -6,7 +6,7 @@ define(
     function (require) {
         var util = require('../util');
         var dom = require('./base');
-        var EXPANDO = '_winnie_data_' + util.now();
+        var EXPANDO = '_winnie_data_' + util.now()  ;
         var exports = {};
         var win = window;
         var attrPrefix = 'data-';
@@ -136,6 +136,19 @@ define(
                         // window
                         objectOps.data(el, name, value);
                     }
+                }
+            }
+        };
+
+        exports.deleteData = function (selector, name) {
+            var els = dom.query(selector), elem, i;
+            for (i = els.length - 1; i >= 0; i--) {
+                elem = els[i];
+                if (elem.nodeType) {
+                    domOps.removeData(elem, name);
+                } else {
+                    // window
+                    objectOps.removeData(elem, name);
                 }
             }
         };

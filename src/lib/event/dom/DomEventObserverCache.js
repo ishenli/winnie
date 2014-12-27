@@ -11,10 +11,13 @@ define(function (require) {
     var special = require('./special');
     var DomEventObject = require('./DomEventObject');
     var DomEventObserver = require('./DomEventObserver');
+    var domMatch = require('../../dom/matches-selector');
 
     var DomEventObserverCache = ObserverCache.extend({
         initialize: function (option) {
-            DomEventObserverCache.superClass.initialize.call(this, option);
+            //DomEventObserverCache.superClass.initialize.call(this, option);
+            util.mix(this, option);
+            this.reset();
         },
         /**
          * 用于给Dom元素注册事件，作为一个主监听函数
@@ -25,16 +28,18 @@ define(function (require) {
             var eventObserver = DomEventUtils.data(currentTarget);
             var handler = eventObserver.handler;
             var s = special[type] || {};
+
             if (!s.init) {
                 DomEventUtils.addEventListener(currentTarget, type, handler);
             }
         },
         reset: function () {
             DomEventObserverCache.superClass.reset.call(this);
+            this.delegateCount = 0;
 
         },
         /**
-         *
+         * 给cache中添加observer
          * @param {Object} options
          * @property {string} options.type
          * @property {HTMLElement} options.currentTarget
@@ -48,8 +53,11 @@ define(function (require) {
 
             // 接下去添加observer到observers
             if (this.findObserver(observer) === -1) { // observers中还木有
-                if (observer.options.selector) {
 
+                // delegate事件, 这个将所有的delegate的observer放在一起, 便于notify
+                if (observer.options.selector) {
+                    observers.splice(me.delegateCount, 0, observer);
+                    me.delegateCount++;
                 }
                 else {
                     observers.push(observer);
@@ -64,6 +72,8 @@ define(function (require) {
             var context = options.context;
             var currentTarget = me.currentTarget;
             var namespace = options.namespace;
+            var isDelegate = 'selector' in options;
+            var selector = options.selector;
             var namespaceReg;
             if (!observers.length) {
                 return;
@@ -78,7 +88,7 @@ define(function (require) {
             var newObservers = [];
 
             // 如果传入的了函数，需要作为判断删除的一个条件
-            if (fn || namespaceReg) {
+            if (fn || namespaceReg || isDelegate) {
                 context = context || currentTarget;
                 for (var i = 0, j = 0, len = observers.length; i < len; ++i) {
                     observerItem = observers[i];
@@ -89,11 +99,18 @@ define(function (require) {
                     if (context !== observerContext
                         || (fn && fn !== observerOptions.fn)
                         || (namespaceReg && !observerOptions.namespace.match(namespaceReg))
+                        || (isDelegate &&
+                            (selector && selector!== observerOptions.selector)
+                            || (!selector && !observerOptions.selector)
+                        )
                     ) {
                         newObservers[j++] = observerItem;
                     }
                     else {
-                        // 这里删掉observer
+                        // 删掉observer，如何做处理
+                        if (observerOptions.selector && me.delegateCount) {
+                            me.delegateCount--;
+                        }
                     }
                 }
 
@@ -106,7 +123,7 @@ define(function (require) {
 
         },
         /**
-         * notify event的Observers
+         * notify
          * @param {Event} event
          */
         notify: function (event) {
@@ -121,6 +138,46 @@ define(function (require) {
             var currentObserverItem;
             var result;
             var finalResult;
+            var target = event.target; // 触发该事件的节点,但不一定是绑定事件的节点
+            var type = event.type;
+            var i, len;
+
+
+            // 处理delegate
+            if (delegateCount && target.nodeType) {
+                while (target !== currentTarget) {
+                    if (target.disabled !== true  || type !== 'click') {
+                        currentTargetObservers = [];
+                        var selector;
+                        var matchCache = {};
+                        var isMatch;
+
+                        for (i = 0; i < delegateCount; i++) {
+                            observerItem = observers[i];
+                            // 判断节点是否匹配selector
+                            selector = observerItem.options.selector;
+                            isMatch = matchCache[selector];
+
+                            if (isMatch === undefined) {
+                                isMatch = matchCache[selector] = domMatch(target, selector);
+                            }
+
+                            if (isMatch) {
+                                currentTargetObservers.push(observerItem);
+                            }
+                        }
+
+                        if (currentTargetObservers.length) {
+                            allObservers.push({
+                                isDelegate:true,
+                                currentTarget: target,
+                                currentTargetObservers: currentTargetObservers
+                            });
+                        }
+                    }
+                    target = target.parentNode || currentTarget;
+                }
+            }
 
             if (delegateCount < observers.length) {
                 allObservers.push({
@@ -132,11 +189,17 @@ define(function (require) {
             /**
              * 执行observers[]的observer对象，先on的先notify
              */
-            for (var i = 0, len = allObservers.length; !event.isPropagationStopped() && i < len; ++i) {
+            for (i = 0, len = allObservers.length; !event.isPropagationStopped() && i < len; ++i) {
                 observerItem = allObservers[i];
                 currentTargetObservers = observerItem.currentTargetObservers;
                 currentTargetItem = observerItem.currentTarget;
                 event.currentTarget = currentTargetItem;
+
+                // 如果是delegate,则修正this 指向 currentTarget，同jQuery
+                if (observerItem.isDelegate) {
+                    me.delegateContext = event.currentTarget;
+                }
+
                 for (var j = 0; !event.isImmediatePropagationStopped() && j < currentTargetObservers.length; j++) {
                     currentObserverItem = currentTargetObservers[j];
                     result = currentObserverItem.notify(event, me);
@@ -156,8 +219,9 @@ define(function (require) {
         /**
          * fire要处理冒泡的情况
          * @param event
+         * @param handelr
          */
-        fire: function (event) {
+        fire: function (event,handelr) {
             event = event || {};
             var me = this;
             var type = me.type;
@@ -177,7 +241,7 @@ define(function (require) {
             var eventPath = [];
             var bubbleIndex = 0;
 
-            if (!event.isEventObject){
+            if (!event.isEventObject) {
                 eventData = event;
                 event = new DomEventObject({
                     'type': type
@@ -190,7 +254,7 @@ define(function (require) {
                 eventPath.push(current);
                 current = current.parentNode || current.ownerDocument || (current === win.document) && win;
 
-            } while (current && bubbles);
+            } while (!handelr && current && bubbles);
 
 
             current = eventPath[bubbleIndex];
@@ -218,12 +282,12 @@ define(function (require) {
 
 
             // 还是要调用原生的事件
-            if (!event.isDefaultPrevented()) {
+            if (!handelr && !event.isDefaultPrevented()) {
 
                 try {
                     if (currentTarget[type] && !util.isWindow(currentTarget)) {
+                        // 这个是为了标识浏览器的默认事件不触发 winnie的事件
                         DomEventObserverCache.triggeredEvent = type;
-
                         currentTarget[type]();
                     }
                 }
@@ -242,23 +306,23 @@ define(function (require) {
          * 检查ObserverCache的状态
          * 1.如果没有observers，则delete ObserverCache
          */
-        checkStatus:function() {
+        checkStatus: function () {
             var me = this;
             var currentTarget = this.currentTarget;
             var eventCache = DomEventUtils.data(currentTarget);
-            var domEventObserverCahce;
+            var domEventObservers;
             var type = this.type;
             var handler;
             if (eventCache) {
-                domEventObserverCahce = eventCache.observerCache;
+                domEventObservers = eventCache.observerCache;
                 // cache中observers中为空
                 if (!me.hasObserver()) {
                     handler = eventCache.handler;
-                    DomEventUtils.removeEventListener(currentTarget,type,handler);
-                    delete domEventObserverCahce[type];
+                    DomEventUtils.removeEventListener(currentTarget, type, handler);
+                    delete domEventObservers[type];
                 }
 
-                if (util.isEmptyObject(domEventObserverCahce)) {
+                if (util.isEmptyObject(domEventObservers)) {
                     eventCache.handler = null;
                     DomEventUtils.removeData(currentTarget);
                 }
