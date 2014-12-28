@@ -1,33 +1,33 @@
 /**
  * @file tab
- * 现在中间的tab直接用tab.js几行代码搞定了，貌似功能比较弱，所以打算独立抽成一个控件
+ * @author  shenli <meshenli@gmail.com>
  * 功能点:
  * 1.基本的tab切换
  * 2.数据的延迟加载
  * 3.动画效果
  * 4.切换时候的事件支持
  * 5.不支持键盘切换
- * @author  shenli<shenli03@baidu.com>
  */
+
 define(function (require) {
 
-    var $ = require('jquery');
+    var lib = require('../lib');
     var Widget = require('./Widget');
 
-        /**
-        * @constructor
-        * @extends module:Widget
-        * @requires Widget
-        * @requires jQuery
-        * @exports Tab
-        * @example
-        *   new Tab({
+    /**
+     * @constructor
+     * @extends module:Widget
+     * @requires Widget
+     * @requires HTMLElement
+     * @exports Tab
+     * @example
+     *   new Tab({
         *       element: '#j-tab-yeyou',
         *       container:'#j-tab-yeyou-ct',
         *       panels: '#j-tab-yeyou .item',
         *       activeTriggerClass: 'active'
         *   });
-        */
+     */
     var Tab = Widget.extend({
         /**
          * 控件类型标识
@@ -41,10 +41,10 @@ define(function (require) {
          *
          * @name module:Tab#options
          * @type {Object}
-         * @property {jQuery} element 控件渲染容器,用于检测是否在可视区域
-         * @property {jQuery} container 容器,left的值变化
-         * @property {jQuery} panels  翻转panel项
-         * @property {jQuery} lazyloadClass 延迟加载容器的class
+         * @property {HTMLElement} element 控件渲染容器,用于检测是否在可视区域
+         * @property {HTMLElement} container 容器,left的值变化
+         * @property {HTMLElement} panels  翻转panel项
+         * @property {HTMLElement} lazyloadClass 延迟加载容器的class
          * @property {string} classPrefix 控件class前缀
          * @property {string} triggerType trigger的事件，默认click
          * @property {string} activeTriggerClass 高亮的trigger的class
@@ -54,24 +54,24 @@ define(function (require) {
             element: '',// 整个组件，用于检测是否在可视区域
             container: {
                 getter: function (val) {
-                    return $(val).eq(0);
+                    return lib.get(val);
                 }
             },
             panels: {
                 value: [],
                 getter: function (val) {
-                    return $(val);
+                    return lib.query(val);
                 }
             },
             triggers: {
                 value: [],
                 getter: function (val) {
-                    return $(val);
+                    return lib.query(val);
                 }
             },
-            classPrefix: 'mp',
+            classPrefix: 'ui',
             triggerType: 'click',
-            activeTriggerClass: 'mp-active',
+            activeTriggerClass: 'ui-active',
             length: {
                 readOnly: true,
                 getter: function () {
@@ -104,7 +104,7 @@ define(function (require) {
             var triggers = this.get('triggers');
 
             function focus(ev) {
-                that._onFocusTrigger(ev.type, $(this).index());
+                that._onFocusTrigger(ev.type, lib.index(this, triggers));
             }
 
             function leave() {
@@ -112,11 +112,11 @@ define(function (require) {
             }
 
             if (this.get('triggerType') === 'click') {
-                triggers.click(focus);
+                lib.on(triggers,'click', focus);
             }
-            //  hover
             else {
-                triggers.hover(focus, leave);
+                lib.on(triggers, 'mouseenter', focus);
+                lib.on(triggers, 'mouseleave', leave);
             }
 
         },
@@ -156,21 +156,22 @@ define(function (require) {
             var args = {
                 toIndex: toIndex,
                 fromIndex: fromIndex
-
             };
+
             this.fire('switch', args);
             this._switchTrigger(toIndex, fromIndex);
             this.renderPanelTextarea(toIndex);
             this._switchPanel(this._getPanelInfo(toIndex, fromIndex));
             this.fire('switched', args);
         },
+
         _switchTrigger: function (toIndex, fromIndex) {
             var triggers = this.get('triggers');
             if (triggers.length < 1) {
                 return;
             }
-            triggers.eq(fromIndex).removeClass(this.get('activeTriggerClass'));
-            triggers.eq(toIndex).addClass(this.get('activeTriggerClass'));
+            lib.removeClass(triggers[fromIndex], this.get('activeTriggerClass'));
+            lib.addClass(triggers[toIndex], this.get('activeTriggerClass'));
         },
 
         /**
@@ -178,18 +179,18 @@ define(function (require) {
          * @param {Object} panelInfo
          * @param {number} panelInfo.toIndex 下一个的索引
          * @param {number} panelInfo.fromIndex 上一个的索引
-         * @param {jQuery} panelInfo.toPanels 下一个的panel
-         * @param {jQuery} panelInfo.fromPanels 上一个的panel
+         * @param {HTMLElement} panelInfo.toPanels 下一个的panel
+         * @param {HTMLElement} panelInfo.fromPanels 上一个的panel
          * @private
          */
         _switchPanel: function (panelInfo) {
-            //  默认是最简单的切换效果：直接隐藏/显示
-            panelInfo.fromPanels.hide();
-            panelInfo.toPanels.show();
+            // 默认是最简单的切换效果：直接隐藏/显示
+            lib.hide(panelInfo.fromPanels);
+            lib.show(panelInfo.toPanels);
         },
 
         _getPanelInfo: function (toIndex, fromIndex) {
-            var panels = this.get('panels').get();
+            var panels = this.get('panels');
             var step = this.get('step');
 
             var fromPanels;
@@ -208,8 +209,8 @@ define(function (require) {
             return {
                 toIndex: toIndex,
                 fromIndex: fromIndex,
-                toPanels: $(toPanels),
-                fromPanels: $(fromPanels)
+                toPanels: toPanels,
+                fromPanels: fromPanels
             };
         },
 
@@ -221,14 +222,14 @@ define(function (require) {
          */
         renderPanelTextarea: function (toIndex) {
             var that = this;
-            var toPanel = this.get('panels').eq(toIndex);
-            if (!toPanel.length) {
+            var toPanel = this.get('panels')[toIndex];
+            if (!toPanel) {
                 return;
             }
 
-            var scriptCnt = toPanel.find(this.get('lazyloadClass'));
+            var scriptCnt = lib.query(this.get('lazyloadClass'), toPanel);
             if (scriptCnt.length) {
-                scriptCnt.each(function (index, textarea) {
+                scriptCnt.each(function (textarea, index) {
                     that.renderLazyData(textarea);
                 });
             }
@@ -240,22 +241,22 @@ define(function (require) {
          * @public
          */
         renderLazyData: function (textarea) {
-            textarea = $(textarea);
-            textarea.hide();
-            if (textarea.attr('lazy-data') === '1') {
+            lib.hide(textarea);
+            if (textarea.getAttribute('lazy-data') === '1') {
                 return;
             }
 
-            textarea.attr('lazy-data', '1');
+            textarea.setAttribute('lazy-data', '1');
 
-            var cnt = textarea[0].value.replace(/&lt;/ig, '<')
+            // 转换<>
+            var cnt = textarea.value.replace(/&lt;/ig, '<')
                 .replace(/&gt;/ig, '>');
 
-            textarea.before($(cnt));
+            lib.before(textarea, lib.create(cnt),true);
 
         },
         /**
-         * 切换到上一panel
+         * 切换到上一个 panel
          * @public
          */
         prev: function () {

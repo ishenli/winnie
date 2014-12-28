@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>tab test</title>
+    <link rel="stylesheet" href="../dep/lacus/asset/all/all.css"/>
+</head>
+<body>
+<div class="mp-box mp-box-tab" id="tab1">
+    <div class="mp-box-head">
+        <h3 class="mp-box-head-title active">Tab名称</h3>
+        <h3 class="mp-box-head-title">Tab名称2</h3>
+        <div class="mp-line"></div>
+    </div>
+    <div class="mp-box-content">box内容</div>
+    <div class="mp-box-content mp-hidden">box内容2</div>
+</div>
+
+<br/>
+<br/>
+<br/>
+<div class="mp-box mp-box-tab" id="tab2">
+    <div class="mp-box-head">
+        <h3 class="mp-box-head-title active">Tab名称</h3>
+        <h3 class="mp-box-head-title">隐藏的内容</h3>
+        <div class="mp-line"></div>
+    </div>
+    <div class="mp-box-content">box内容</div>
+    <div class="mp-box-content mp-hidden">
+        <textarea class="data-lazyload">
+            隐藏的内容,并且会执行脚本
+            <script>
+                alert('hidden');
+            </script>
+        </textarea>
+    </div>
+</div>
+<script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/1-6-10/esl.js"></script>
+<script>
+    require.config({
+        'baseUrl': '../src',
+        'packages': [
+            {
+                'name': 'etpl',
+                'location': '../dep/etpl/3.0.0/src',
+                'main': 'main'
+            },
+            {
+                'name': 'promise',
+                'location': '../dep/promise/1.0.0/src',
+                'main': 'main'
+            }
+        ],
+        'paths': {}
+    });
+
+    require(['widget/Tab','lib'], function (Tab,lib) {
+
+
+        var tab = new Tab({
+            panels:'#tab1 .mp-box-content',
+            container:'#tab1',
+            triggers:'#tab1 .mp-box-head-title',
+            activeTriggerClass:'active'
+        });
+
+        var tab2 = new Tab({
+            panels:'#tab2 .mp-box-content',
+            container:'#tab2',
+            triggers:'#tab2 .mp-box-head-title',
+            activeTriggerClass:'active'
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -13,7 +13,7 @@ define(function (require) {
 
 
     function fixType(options, type) {
-        var s = special[type];
+        var s = special[type] || {};
         var typeFix;
 
         // 将mouseenter/mouseleave 转chrome不含有转为浏览器有的mouseover/mouseout

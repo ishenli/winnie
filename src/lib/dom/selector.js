@@ -326,9 +326,44 @@ define(function (require) {
 
 
     /**
+     * 获取某个元素在元素集合中的位置
+     * @method module:lib.index
+     * @param {(HTMLElement | string)} selector 目标元素
+     * @param {string} list 元素集合
+     * @return {?number} 位置
+     */
+    exports.index = function(selector,list) {
+        var els = exports.query(selector),
+            prev,
+            n = 0,
+            parent,
+            els2,
+            el = els[0];
+
+        if (!list) {
+            parent = el && el.parentNode;
+            if (!parent) {
+                return -1;
+            }
+            prev = el;
+            while ((prev = prev.previousSibling)) {
+                if (prev.nodeType === 1) {
+                    n++;
+                }
+            }
+            return n;
+        }
+
+        els2 = dom.query(list);
+
+        return util.indexOf(el, els2);
+    };
+
+
+    /**
      * Sorts an array of Dom elements, in place, with the duplicates removed.
      * Note that this only works on arrays of Dom elements, not strings or numbers.
-     * @param {HTMLElement[]} elements.
+     * @param {HTMLElement[]} elements
      * @method
      * @return {HTMLElement[]}
      * @member dom
@@ -380,7 +415,7 @@ define(function (require) {
 
 
     /**
-     * 不叫dom节点是否相等
+     * dom节点是否相等
      * @param {HTMLElement|HTMLElement[]} aNode
      * @param {HTMLElement|HTMLElement[]} bNode
      * @returns {boolean}
