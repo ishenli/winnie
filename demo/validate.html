@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>validator test</title>
+    <link rel="stylesheet" href="../dep/lacus/asset/all/all.css"/>
+</head>
+<body>
+<div class="mp-grid">
+    <div class="mp-unit mp-unit-7-12">
+        <div class="mp-box">
+            <div class="mp-box-head">
+                <h3 class="mp-box-title">表单验证</h3>
+            </div>
+            <div class="mp-box-container">
+                <div class="mp-box-content">
+                    <form class="mp-form mp-form-horizontal" id="form">
+                        <fieldset>
+                            <div class="mp-form-item">
+                                <label for="name" class="mp-form-label">用户名:</label>
+                                <input id="name" name="username" class="mp-input" data-explain="用户名为邮箱"/>
+
+                                <p class="mp-form-explain">用户名为邮箱</p>
+                            </div>
+                            <div class="mp-form-item">
+                                <label for="password" class="mp-form-label">密码:</label>
+                                <input id="password" class="mp-input" type="password" data-explain="请输入密码"/>
+
+                                <p class="mp-form-explain">请输入密码</p>
+                            </div>
+                            <div class="mp-form-item">
+                                <label for="repassword" class="mp-form-label">重复输入密码:</label>
+                                <input id="repassword" class="mp-input" type="password" data-explain="重复输入密码"/>
+
+                                <p class="mp-form-explain">重复输入密码</p>
+                            </div>
+                            <div class="mp-form-item">
+                                <label for="email" class="mp-form-label">邮箱:</label>
+                                <input id="email" class="mp-input" type="email"/>
+
+                                <p class="mp-form-explain">请输入邮箱</p>
+                            </div>
+                            <div class="mp-form-item">
+                                <input type="submit" class="mp-btn mp-btn-blue" value="提交"/>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/1-6-2/esl.js"></script>
+<script>
+    require.config({
+        'baseUrl': '../src',
+        'packages': [
+            {
+                'name': 'etpl',
+                'location': '../dep/etpl/3.0.0/src',
+                'main': 'main'
+            }
+        ]
+    });
+
+
+    require(['widget/Validator'], function (Validator) {
+
+        console.log('new Validate');
+
+        var validator = new Validator({
+            element: '#form'
+        });
+
+        validator.addItem({
+            element: '#name',
+            display: '用户名',
+            required: true,
+            rule: 'email'
+        }).addItem({
+            element: '#password',
+            display: '密码',
+            rule: 'minlength{"min":5} maxlength{"max":20}'
+        }).addItem({
+            element: '#repassword',
+            display: '重复密码',
+            rule: 'confirmation{target: "password", name: "第一遍"}'
+        }).addItem({
+            element: '#email',
+            display: '邮箱',
+            rule: 'email'
+        });
+
+        validator.on('formValidate', function () {
+            console.log('开始验证', new Date().getMilliseconds());
+        });
+
+        validator.on('formValidated', function (hasError, results) {
+            console.log(hasError);
+            console.log(results);
+            console.log('验证完成', new Date().getMilliseconds())
+        });
+
+    });
+</script>
+
+</body>
+</html>

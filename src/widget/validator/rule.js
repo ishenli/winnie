@@ -2,8 +2,8 @@
  * @file validator
  */
 define(function (require) {
-    var lib = require('winnie/lib');
-    var u = require('underscore');
+    var lib = require('../../lib');
+    var util = require('../../lib/util');
     var rules = [];
     var messages = {};
 
@@ -28,7 +28,7 @@ define(function (require) {
             };
 
             //函数
-        } else if (u.isFunction(oper)) {
+        } else if (util.isFunction(oper)) {
 
             //这个貌似还不懂。。。。
             me.operator = function (opts, commit) {
@@ -76,7 +76,7 @@ define(function (require) {
         var rule = opts.rule;
         var msgTpl;
         if (opts.message) {
-            if (u.isObject(opts.message)) {
+            if (util.isObject(opts.message)) {
                 msgTpl = opts.message[result ? 'success' : 'failure'];
             } else {
                 msgTpl = result ? 'success' : 'failure';
@@ -95,14 +95,14 @@ define(function (require) {
      */
     function setMessage(name, message) {
 
-        if (lib.isPlainObject(name)) {
-            u.each(name, function (v, i) {
+        if (util.isPlainObject(name)) {
+            util.each(name, function (v, i) {
                 setMessage(v, i);
             });
             return this;
         }
 
-        if (lib.isPlainObject(message)) {
+        if (util.isPlainObject(message)) {
             messages[name] = message;
         } else {
             messages[name] = {
@@ -127,9 +127,9 @@ define(function (require) {
         //模板
         var arr = tpl.match(reg1);
 
-        arr && u.each(arr, function (v) {
+        arr && util.each(arr, function (v) {
             var key = v.match(reg2)[1];
-            var value = opts[lib.trim(key)];
+            var value = opts[util.trim(key)];
             result = result.replace(v, value);
         });
         return result;
@@ -165,7 +165,7 @@ define(function (require) {
         //暂时先支持input
         var val = element.value;
 
-        return !!lib.trim(val);
+        return !!util.trim(val);
 
     }, '请输入{{display}}');
 
@@ -178,7 +178,7 @@ define(function (require) {
     addRule('minlength', function (option) {
         var element = lib.g(option.element);
 
-        var len = lib.trim(element.value).length;
+        var len = util.trim(element.value).length;
 
         return len >= option.min;
 
@@ -187,7 +187,7 @@ define(function (require) {
     addRule('maxlength', function (option) {
         var element = lib.g(option.element);
 
-        var len = lib.trim(element.value).length;
+        var len = util.trim(element.value).length;
 
         return len <= option.max;
 
@@ -196,11 +196,11 @@ define(function (require) {
 
     addRule('confirmation', function (option) {
         var element = lib.g(option.element);
-        var val = lib.trim(element.value);
+        var val = util.trim(element.value);
 
         var target = lib.g(option.target);
 
-        var targetVal = lib.trim(target.value);
+        var targetVal = util.trim(target.value);
 
         return val === targetVal;
 
@@ -220,8 +220,8 @@ define(function (require) {
         var result = {};
 
         var arr = str.split(',');
-        u.each(arr, function (v, i) {
-            arr[i] = lib.trim(v);
+        util.each(arr, function (v, i) {
+            arr[i] = util.trim(v);
 
             if (!arr[i]){
                 throw new Error(NOTICE);
@@ -229,14 +229,14 @@ define(function (require) {
 
             var arr2 = arr[i].split(':');
 
-            var key = lib.trim(arr2[0]),
-                value = lib.trim(arr2[1]);
+            var key = util.trim(arr2[0]),
+                value = util.trim(arr2[1]);
 
             if (!key || !value){
                 throw new Error(NOTICE);
             }
 
-            result[getValue(key)] = lib.trim(getValue(value));
+            result[getValue(key)] = util.trim(getValue(value));
 
         });
 
