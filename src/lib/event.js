@@ -1,8 +1,8 @@
 /**
  * @file event
- * @author shenli （meshenli@gmail.com）
+ * @author shenli <meshenli@gmail.com>
  */
 define(function (require) {
-    var domEvent = require('./event/domEvent');
+    var domEvent = require('./event/dom/main');
     return domEvent;
 });

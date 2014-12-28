@@ -9,6 +9,21 @@ define(function (require) {
     var util = require('../../util');
     var DomEventCache = require('./DomEventObserverCache');
     var DomEventObject = require('./DomEventObject');
+    var special = require('./special');
+
+
+    function fixType(options, type) {
+        var s = special[type];
+        var typeFix;
+
+        // 将mouseenter/mouseleave 转chrome不含有转为浏览器有的mouseover/mouseout
+        if (!options.originalType && (typeFix = s.typeFix)) {
+            options.originalType = type;
+            type = typeFix;
+        }
+
+        return type;
+    }
 
     /**
      * 添加observer
@@ -18,6 +33,7 @@ define(function (require) {
      */
     function createEventObserver(currentTarget, type, options) {
         options = util.merge(options);
+        type = fixType(options, type);
         var domEventCacheHolder;
         var domEventObserverCache;
         var domEventObserverCacheList;
