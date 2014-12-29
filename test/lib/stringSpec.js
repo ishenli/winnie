@@ -19,5 +19,9 @@ define(function(require) {
 
         });
 
+        it('stripTags',function(){
+            var name = '<tag>shenli</tag>';
+            expect(lib.stripTags(name)).toBe('shenli');
+        });
     });
 });

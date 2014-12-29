@@ -5,32 +5,33 @@
  * https://github.com/ecomfe/etpl
  */
 define(function (require) {
-    var Etpl = require('etpl');
+    var etpl = require('etpl');
+    var lib = require('../lib');
 
     var compiledTemplates = {};
 
-    var exports ={
-        parseElementFromTemplate:function() {
+    var exports = {
+        parseElementFromTemplate: function () {
             var t, template = this.get('template');
-            if(/^#/.test(template) && (t = document.getElementById(template.substring(1)))) {
+            if (/^#/.test(template) && (t = document.getElementById(template.substring(1)))) {
                 template = t.innerHTML;
                 this.set('template', template);
             }
 
-            this.element = stringToDom(this.compile());
+            this.element = lib.create(this.compile());
         },
-        compile:function(template,model){
+        compile: function (template, model) {
             template = template || this.get('template');
-            model = model || this.get('model') ||{};
+            model = model || this.get('model') || {};
 
             var filters = this.templateFilters;
             var filter;
 
             //添加过滤器
-            if(filters) {
-                for(filter in filters) {
-                    if(filters.hasOwnProperty(helper)) {
-                        Etpl.addFilter(filter, filters[filter]);
+            if (filters) {
+                for (filter in filters) {
+                    if (filters.hasOwnProperty(helper)) {
+                        etpl.addFilter(filter, filters[filter]);
                     }
                 }
             }
@@ -39,24 +40,13 @@ define(function (require) {
             var compiledTemplate = compiledTemplates[template];
 
             if (!compiledTemplate) {
-               this.compiledTemplate =  compiledTemplate = compiledTemplates[template] = Etpl.compile(template);
+                this.compiledTemplate = compiledTemplate = compiledTemplates[template] = etpl.compile(template);
             }
-            // 生成 html
-            var html = compiledTemplate(model);
 
             //因为etpl全局，可能需要卸载filter
-
-            return html;
+            return compiledTemplate(model);
         }
     };
 
-
-    function stringToDom(str) {
-        var div = document.createElement('div');
-        if(typeof str ==='string') {
-            div.innerHTML = str;
-        }
-        return div.firstChild;
-    }
     return exports;
 });

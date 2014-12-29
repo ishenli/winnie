@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>album test</title>
+    <link rel="stylesheet" href="../dep/lacus/asset/all/all.css"/>
+    <link rel="stylesheet" href="../src/widget/album/default.css"/>
+    <style type="text/css">
+        #imgList li{
+            display: inline-block;
+            margin-right: 10px;;
+        }
+        #imgList li img{
+            width: 100px;
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+<div class="mp-box mp-box-primary">
+    <div class="mp-box-head">
+        <h3 class="mp-box-head-title">album test</h3>
+    </div>
+    <div class="mp-box-container">
+        <div class="mp-box-content">
+            <p>请点击图片查看相册</p>
+            <ul id="imgList" class="fn-clearfix">
+                <li><img class="j-img" src="http://img0.bdstatic.com/img/image/shouye/mxwlh-9503613705.jpg" data-origin-url="http://img0.bdstatic.com/img/image/shouye/hjsph.jpg" alt="/" data-desc="帅哥一枚"> </li>
+                <li><img class="j-img" src="http://img0.bdstatic.com/img/image/shouye/mxwlh-9503613705.jpg" data-origin-url="http://e.hiphotos.baidu.com/image/pic/item/43a7d933c895d143a9c8349b71f082025baf07cf.jpg" alt="/"> </li>
+                <li><img class="j-img" src="http://img0.bdstatic.com/img/image/shouye/mxwlh-9503613705.jpg" data-origin-url="http://img0.bdstatic.com/img/image/shouye/mntsc-11094201388.jpg" alt="/" data-desc="沈礼好"> </li>
+                <li><img class="j-img" src="http://img0.bdstatic.com/img/image/shouye/mxwlh-9503613705.jpg" data-origin-url="http://e.hiphotos.baidu.com/image/pic/item/43a7d933c895d143a9c8349b71f082025baf07cf.jpg" alt="/" data-desc="我是一个美女"> </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/1-6-10/esl.js"></script>
+<script>
+    require.config({
+        'baseUrl': '../src',
+        'packages': [
+            {
+                'name': 'etpl',
+                'location': '../dep/etpl/3.0.0/src',
+                'main': 'main'
+            },
+            {
+                'name': 'promise',
+                'location': '../dep/promise/1.0.0/src',
+                'main': 'main'
+            }
+        ],
+        'paths': {}
+    });
+
+    require(['widget/Album','lib'], function (Album,lib) {
+
+
+        var album1 = new Album({
+            baseEle:lib.query('#imgList'),
+            trigger:'click',
+            classPrefix:'mp-dialog'
+        });
+    });
+</script>
+
+</body>
+</html>

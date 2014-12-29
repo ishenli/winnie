@@ -1,34 +1,32 @@
 /**
  * @file class
  * @author shenli
- * thanks to https://github.com/aralejs/class/blob/master/src/class.js
+ * thanks to https:// github.com/aralejs/class/blob/master/src/class.js
  */
-define(function (require) {
-
-    var u = require('underscore');
+define(function () {
 
     function Class(obj) {
-        if (!(this instanceof Class) && u.isFunction(obj)) {
+        if (!(this instanceof Class) && isFunction(obj)) {
             return classify(obj);
         }
     }
 
     /**
      * 创建
-     * @param parent 继承的父类
-     * @param properties 属性
+     * @param {Object} parent 继承的父类
+     * @param {Object} properties 属性
      */
     Class.create = function (parent, properties) {
 
-        //如果parent不是一个函数，则把parent赋值给properties
-        //如 create({'attr':'val','method:'foo()');
-        if (!u.isFunction(parent)) {
+        // 如果parent不是一个函数，则把parent赋值给properties
+        // 如 create({'attr':'val','method:'foo()');
+        if (!isFunction(parent)) {
             properties = parent;
             parent = null;
         }
 
         properties || (properties = {});
-        parent || ( parent = properties.Extends || Class);
+        parent || (parent = properties.Extends || Class);
 
         properties.Extends = parent;
 
@@ -39,7 +37,7 @@ define(function (require) {
             }
         }
 
-        //如果传入父类
+        // 如果传入父类
         if (parent !== Class) {
             mix(subClass, parent, parent.StaticsWhiteList);
         }
@@ -50,12 +48,14 @@ define(function (require) {
     };
 
     function implement(properties) {
-        var key, value;
+        var key;
+        var value;
         for (key in properties) {
             value = properties[key];
             if (Class.Mutators.hasOwnProperty(key)) {
                 Class.Mutators[key].call(this, value);
-            } else {
+            }
+            else {
                 this.prototype[key] = value;
             }
         }
@@ -95,10 +95,10 @@ define(function (require) {
             this.superClass = parent.prototype;
         },
         'Implements': function (items) {
-            u.isArray(items) || (items = [items]);
+            isArray(items) || (items = [items]);
 
-            var proto = this.prototype, item = items.shift();
-
+            var proto = this.prototype;
+            var item = items.shift();
 
             while (item) {
                 mix(proto, item.prototype || item);
@@ -118,7 +118,9 @@ define(function (require) {
 
     var createProto = Object._proto_ ?
         function (proto) {
-            return {_proto_: proto};
+            return {
+                _proto_: proto
+            };
         } :
         function (proto) {
             F.prototype = proto;
@@ -126,12 +128,12 @@ define(function (require) {
         };
 
 
-    //helpers
-    //source 会覆盖target的属性
+    // helpers
+    // source 会覆盖target的属性
     function mix(target, source, exclude) {
         for (var key in source) {
             if (source.hasOwnProperty(key)) {
-                if (exclude && u.indexOf(exclude, key) === -1){
+                if (exclude && indexOf(exclude, key) === -1) {
                     continue;
                 }
 
@@ -139,6 +141,29 @@ define(function (require) {
             }
         }
     }
+
+    var toString = Object.prototype.toString;
+
+    var isArray = Array.isArray || function (val) {
+        return toString.call(val) === '[object Array]';
+    };
+
+    var isFunction = function (val) {
+        return toString.call(val) === '[object Function]';
+    };
+
+    var indexOf = Array.prototype.indexOf ?
+        function (arr, item) {
+            return arr.indexOf(item);
+        } :
+        function (arr, item) {
+            for (var i = 0, len = arr.length; i < len; i++) {
+                if (arr[i] === item) {
+                    return i;
+                }
+            }
+            return -1;
+        };
 
     return Class;
 });

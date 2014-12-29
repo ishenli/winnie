@@ -4,16 +4,15 @@
  */
 define(function (require) {
 
-    var u = require('underscore');
-
-    var lib = {};
-
+    var util = require('./util');
     var toString = Object.prototype.toString;
     var slice = Array.prototype.slice;
-    var hasOwnProperty = Object.prototype.hasOwnProperty;
 
-    lib.inherit = function (superClass,subClass) {
-        function F() {}
+    var lang = {};
+
+    lang.inherit = function (superClass, subClass) {
+        function F() {
+        }
 
         F.prototype = superClass.prototype;
 
@@ -32,10 +31,10 @@ define(function (require) {
 
     /**
      * curry
-     * @param fn
+     * @param {Function} fn
      * @returns {Function}
      */
-    lib.curry = function (fn) {
+    lang.curry = function (fn) {
         var args = slice.call(arguments, 1);
         return function () {
             return fn.apply(this, args.concat(slice.call(arguments)));
@@ -43,23 +42,21 @@ define(function (require) {
     };
 
 
-
-
     /**
      * 深度克隆一个对象
-     * @param source
+     * @param {Object} source
      * @returns {*}
      * http://www.cnblogs.com/rubylouvre/archive/2010/03/26/1696600.html
      */
-    lib.deepClone = function (source) {
+    lang.deepClone = function (source) {
         if (!source || typeof source !== 'object') {
             return source;
         }
 
         var result = source;
 
-        if (u.isArray(source)) {
-            result = u.clone(source); //浅拷贝
+        if (util.isArray(source)) {
+            result = util.map(source, lang.deepClone); // 浅拷贝
         }
         // 如果每个成员是个对象，进行递归深度克隆
         else if (toString.call(source) === '[object Object]'
@@ -72,7 +69,7 @@ define(function (require) {
             result = {};
             for (var key in source) {
                 if (source.hasOwnProperty(key)) {
-                    result[key] = lib.deepClone(source[key]);
+                    result[key] = lang.deepClone(source[key]);
                 }
             }
 
@@ -81,87 +78,5 @@ define(function (require) {
         return result;
     };
 
-    //各种辅助函数
-    var iteratesOwnLast;
-    (function() {
-        var props = [];
-        function Ctor() { this.x = 1; }
-        Ctor.prototype = { 'valueOf': 1, 'y': 1 };
-        for (var prop in new Ctor()) { props.push(prop); }
-        iteratesOwnLast = props[0] !== 'x';
-    }());
-
-    lib.isWindow=function(o) {
-        return o != null && o === o.window;
-    };
-
-
-
-    lib.isPlainObject=function(o) {
-        if (!o || toString.call(o) !== '[object Object]'||
-            o.nodeType || lib.isWindow(o)) {
-            return false;
-        }
-
-        try {
-            // Not own constructor property must be Object
-            if (o.constructor &&
-                !hasOwnProperty.call(o, 'constructor') &&
-                !hasOwnProperty.call(o.constructor.prototype, 'isPrototypeOf')) {
-                return false;
-            }
-        } catch (e) {
-            // IE8,9 Will throw exceptions on certain host objects #9897
-            return false;
-        }
-
-        var key;
-
-        // Support: IE<9
-        // Handle iteration over inherited properties before own properties.
-        // http://bugs.jquery.com/ticket/12199
-        if (iteratesOwnLast) {
-            for (key in o) {
-                return hasOwnProperty.call(o, key);
-            }
-        }
-
-        // Own properties are enumerated firstly, so to speed up,
-        // if last one is own, then all properties are own.
-        /* jshint ignore:start */
-        for (key in o) {}
-        return key === undefined || hasOwnProperty.call(o, key);
-        /* jshint ignore:end */
-    };
-
-
-    /**
-     * 从数组中删除对应元素
-     * @param target
-     * @param array
-     * @returns {*}
-     */
-    lib.erase = function(target, array) {
-        for (var i = 0; i < array.length; i++) {
-            if (target === array[i]) {
-                array.splice(i, 1);
-                break;
-            }
-        }
-        return array;
-    };
-
-
-    /**
-     * 生成guid
-     * @returns {string}
-     */
-    lib.guid =  function(){
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxx'.replace(/[xy]/g,function(c){
-           var r = Math.random()*16| 0,v = c =='x' ? r:(r&0x3|0x8);
-            return v.toString(16);
-        }).toUpperCase();
-    };
-
-    return lib;
+    return lang;
 });

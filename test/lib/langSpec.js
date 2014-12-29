@@ -24,4 +24,22 @@ define(function(require) {
         });
 
     });
+
+    describe('isEmpty', function () {
+        it('是否为空',function (){
+            var tests = ['', undefined, null];
+
+            tests.forEach(function(val){
+                expect(lib.isEmpty(val)).toBeTruthy();
+            });
+
+            var wrong = ['hello','undefined'];
+
+            wrong.forEach(function(val){
+                expect(lib.isEmpty(val)).toBeFalsy();
+            });
+
+        });
+
+    });
 });

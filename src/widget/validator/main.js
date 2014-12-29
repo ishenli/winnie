@@ -1,21 +1,23 @@
 /**
  * @file 验证组件的核心模块
- * @author shenli （meshenli@gmail.com）
+ * @author shenli <meshenli@gmail.com>
  */
 define(function (require) {
 
     var Widget = require('../Widget');
-    var u = require('underscore');
-    var lib = require('winnie/lib');
+    var util = require('../../lib/util');
+    var lib = require('../../lib');
     var Item = require('./item');
-    var async = require('winnie/lib/async');
+    var async = require('../../lib/async');
 
     var validators = [];
 
     var setterConfig = {
-        value: function(){},
+        value: function () {
+        },
         setter: function (val) {
-            return u.isFunction(val) ? val : function(){};
+            return util.isFunction(val) ? val : function () {
+            };
         }
     };
     var ValidatorMain = Widget.extend({
@@ -31,7 +33,6 @@ define(function (require) {
         },
         init: function () {
             this.setup();
-
         },
         setup: function () {
             var that = this;
@@ -48,7 +49,7 @@ define(function (require) {
                 if (that.get('checkOnSubmit')) {
                     lib.on(that.element, 'submit', function (e) {
                         //阻止默认提交事件
-                        lib.preventDefault(e);
+                        e.preventDefault();
 
                         that.execute(function (err) {
                             !err && that.get('autoSubmit') && that.element.submit();
@@ -69,15 +70,15 @@ define(function (require) {
 
             var that = this;
 
-            if (u.isArray(config)) {
-                u.each(config, function (item, i) {
+            if (util.isArray(config)) {
+                util.each(config, function (item, i) {
                     that.addItem(item);
                 });
                 return this;
             }
 
             //每个item的配置
-            config = u.extend({
+            config = util.extend({
                 triggerType: that.get('triggerType'),
                 displayHelper: that.get('displayHelper'),
                 showMessage: that.get('showMessage'),
@@ -92,13 +93,14 @@ define(function (require) {
             item._validator = that;
 
             item.on('itemValidated', function (err, message, element) {
-                //每个Item的showMessage||hideMessage
+                // 每个Item的showMessage||hideMessage
                 that.query(element).get(err ? 'showMessage' : 'hideMessage')
                     .call(that, message, element);
             });
 
-            lib.on(item.element,item.get('triggerType'),function(e) {
-                if(!item.get('checkNull')) {
+            lib.on(item.element, item.get('triggerType'), function (e) {
+
+                if (!item.get('checkNull')) {
                     return;
                 }
                 item.execute(null);
@@ -108,7 +110,7 @@ define(function (require) {
         },
         /**
          *
-         * @param selector selector是一个item实例或者item的element
+         * @param {Item|string} selector selector是一个item实例或者item的element
          */
         removeItem: function (selector) {
             var that = this;
@@ -117,7 +119,7 @@ define(function (require) {
                 : findItemBySelector(selector, that.items);
             if (target) {
                 target.get('hideMessage').call(that, null, target.element);
-                lib.erase(target, that.items);
+                util.erase(target, that.items);
                 target.dispose();
             }
 
@@ -126,7 +128,7 @@ define(function (require) {
         },
         /**
          * main 执行模块，对整个表单的验证事件进行处理
-         * @param callback
+         * @param {Function} callback
          * @returns {ValidatorMain}
          */
         execute: function (callback) {
@@ -135,18 +137,18 @@ define(function (require) {
                 hasError = false,
                 firstElem = null;
 
-//            hide所有提示信息
-            u.each(that.items, function (item, i) {
+            // hide所有提示信息
+            util.each(that.items, function (item, i) {
                 item.get('hideMessage').call(that, null, item.element);
             });
 
-//            触发表单验证前的事件
+            // 触发表单验证前的事件
             that.fire('formValidate', that.element);
 
             //遍历执行Item的execute事件
             async.each(that.items, function (item, cb) {
 
-                     // err，如果用户没有设置，则为规则名称
+                    // err，如果用户没有设置，则为规则名称
                     item.execute(function (err, message, ele) {
 
                         if (err || !hasError) {
@@ -173,22 +175,24 @@ define(function (require) {
         dispose: function () {
             var that = this;
 
-            if (that.element.tagName=== 'FORM') {
-                try{
-                    if(that['_novalidate_old'] === undefined) {
+            if (that.element.tagName === 'FORM') {
+                try {
+                    if (that['_novalidate_old'] === undefined) {
                         that.element.removeAttribute('novalidator');
-                    } else {
+                    }
+                    else {
                         that.element.setAttribute('novalidator', that['_novalidate_old']);
                     }
-                }catch (e){}
+                } catch (e) {
+                }
                 that.element.un('submit');
             }
 
-            u.each(that.items,function(items) {
+            util.each(that.items, function (items) {
                 that.removeItem(items);
             });
 
-            lib.erase(that, validators);
+            util.erase(that, validators);
 
             ValidatorMain.superClass.dispose.call(this);
         },
@@ -200,17 +204,15 @@ define(function (require) {
     });
 
 
-    //helpers
-
     /**
      * 根据Item的element 在item数组中找到item
-     * @param selector Item的element对象
-     * @param array    Item数组对象
+     * @param {Item|string} selector Item的element对象
+     * @param {Array.<Item>} array    Item数组对象
      */
     function findItemBySelector(selector, array) {
         var ret;
         selector = lib.g(selector);
-        u.each(array, function (item, i) {
+        util.each(array, function (item, i) {
             if (item.element === selector) {
                 ret = item;
             }

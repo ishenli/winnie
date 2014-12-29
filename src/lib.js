@@ -4,19 +4,15 @@
  */
 define(function (require) {
 
-    var u = require('underscore');
+    var util = require('./lib/util');
+
 
     var lib = {};
 
-    u.extend(
+    util.extend(
         lib,
         require('./lib/dom'),
-        require('./lib/attribute'),
-        require('./lib/event'),
-        require('./lib/string'),
-        require('./lib/style'),
-        require('./lib/page'),
-        require('./lib/lang')
+        require('./lib/event')
     );
 
     return lib;

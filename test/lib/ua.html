@@ -19,11 +19,23 @@
     <script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/1-6-10/esl.js"></script>
     <script>
         require.config({
-            baseUrl: '../../src',
-            paths: {
-                winne:'winne/asset',
-                underscore:'../dep/underscore/underscore'
-            }
+            'baseUrl': '../../src',
+            'paths': {
+                'winne': 'winne/asset',
+                'underscore': '../dep/underscore/underscore'
+            },
+            'packages': [
+                {
+                    'name': 'etpl',
+                    'location': '../dep/etpl/3.0.0/src',
+                    'main': 'main'
+                },
+                {
+                    'name': 'underscore',
+                    'location': '../dep/underscore/1.6.0/src',
+                    'main': 'underscore'
+                }
+            ]
         });
 
         require(['lib/ua','lib'], function (ua,lib) {

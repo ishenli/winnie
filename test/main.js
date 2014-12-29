@@ -18,9 +18,12 @@ requirejs.config({
     paths: {
         winnie:'.',
         underscore: '../dep/underscore/underscore',
-//        moye: '../dep/moye/src/ui',
         test: '../test',
-        etpl:'../dep/etpl/src/main'
+        htmlHelper: '../test/htmlHelper',
+        etpl:'../dep/etpl/src/main',
+        async:'../dep/async/lib/async',
+        bean:'../dep/bean/bean',
+        jquery:'http://s1.bdstatic.com/r/www/cache/static/jquery/jquery-1.10.2.min_f2fb5194'
     },
 
     // ask Require.js to load these files (all our tests)

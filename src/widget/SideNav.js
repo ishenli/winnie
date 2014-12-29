@@ -1,19 +1,72 @@
 /**
  * @file 侧边导航
- * @author shenli （meshenli@gmail.com）
+ * @author shenli <meshenli@gmail.com>
  */
 
 define(function (require) {
 
     var Widget = require('./Widget');
-    var u = require('underscore');
-    var lib = require('winnie/lib');
-
     var Blink = require('./sideNav/blink');
     var Normal = require('./sideNav/normal');
+    var lib = require('../lib');
+    var util = require('../lib/util');
 
+    /**
+     * @constructor
+     * @extends module:Widget
+     * @requires Widget
+     * @requires lib
+     * @exports SideNav
+     * @example
+     *   new SideNav({
+     *       element:'#j-side-nav',
+     *       effect:'normal',
+     *       easing:'ease-in',
+     *       when:{
+     *          type:1
+     *       }
+     *       showAlways:true,
+     *       map:{
+     *          enable:true,
+     *          rule:{
+     *             '.nav-item-1' : '.section-news',
+     *             '.nav-item-2' : '.section-xinyou',
+     *             '.nav-item-3' : '.section-girl',
+     *             '.nav-item-4' : '.section-video',
+     *          }
+     *       }
+     *
+     *   });
+     */
     var SideNav = Widget.extend({
-        type:'SideNav',
+        /**
+         * 控件标识
+         * @override
+         * @private
+         */
+        type: 'SideNav',
+        /**
+         * 控件配置项
+         *
+         * @name module:SideNav#options
+         * @property {HTMLElement|string} element 控件标识
+         * @property {HTMLElement|string} top 回到顶部的节点
+         * @property {string} [effect='normal'] 出现效果，有normal，fade
+         * @property {number} [duration=600] 延迟毫秒数
+         * @property {number} [throttle=100]  阀流
+         * @property {boolean} [sticky=false]  是否悬浮固定
+         * @property {boolean} [showAlways=false]  是否永远显示在页面上
+         * @property {Object} [map]  映射对象
+         * @property {boolean} map.enable  是否启用map
+         * @property {string} [map.currentPanelClass='ui-panel-current']  选中面板的添加class
+         * @property {string} [map.currentNavClass='ui-panel-current']  选中导航的添加class
+         * @property {number} [map.gap=0]  选中面板到场口顶部的距离
+         * @property {number} [map.proportion=0.8]  隐藏区域的比例，超过该区域即切换选中导航
+         * @property {Object} [when]  出现形式的配置
+         * @property {number} [when.top]  内容滚动到距离窗口顶部一定的距离
+         * @property {string} [when.type=1]  内容的出现形式,共分为4种，具体可看代码注释
+         * @property {HTMLElement|string} [when.node=null]  内容滚动到某个节点出现
+         */
         options: {
 
             /**
@@ -21,10 +74,8 @@ define(function (require) {
              * 1.normal
              * 2.fade
              * 3.zoom
-             * 4.rotate
-             * 5.blur
              */
-            effect: 'blink',
+            effect: 'normal',
 
             duration: {
                 value: 600,
@@ -33,7 +84,7 @@ define(function (require) {
                 }
             },
 
-            throttle: 500,
+            throttle: 1000,
 
             top: {
                 node: '.j-back-top'
@@ -49,7 +100,7 @@ define(function (require) {
             when: {
                 top: 300,
 
-                //内容滚动到这个节点出现sideNav
+                // 内容滚动到这个节点出现sideNav
                 node: '',
                 /**
                  * type = 1: 滚动到固定高度后出场, 依赖 top 参数
@@ -61,118 +112,137 @@ define(function (require) {
             },
 
             /**
+             * 是否悬浮固定
+             * @{type} boolean
+             */
+            sticky: false,
+            /**
+             * 一直显示
+             */
+            showAlways: false,
+            /**
              * 内容与导航的映射规则
              */
             map: {
                 enable: false,
-                currentPanelClass: 'ui-panel-current',
-                currentNavClass: 'ui-nav-current',
-                //映射规则，基本设计为一个key-value
-                rule: {
-                    '.nav-item-1': '.section-1',
-                    '.nav-item-2': '.section-2',
-                    '.nav-item-3': '.section-3',
-                    '.nav-item-4': '.section-4',
-                    '.nav-item-5': '.section-5'
-                }
+                currentPanelClass: 'mp-panel-current',
+                currentNavClass: 'mp-nav-current',
+                // 转移到选中块的距离
+                gap: 0,
+
+                // 隐藏区域的比例
+                proportion: 0.8,
+                // 映射规则，基本设计为一个key-value
+                // 提示：map内的顺序需与页面结构保持一致，否则会出现滚动的室bug
+                rule: {}
             }
         },
         init: function () {
-            this._initSideNav();
+            this._initDom();
             this._initEvent();
             this._initAnim();
-            this._initReset();
             this._initWhen();
+            this._initReset();
         },
-        _initSideNav: function () {
-
+        _initDom: function () {
             var me = this;
+            this.$window = window;
 
-            //获取sideNav的宽高
-            var wh = lib.getSize(this.element);
-            this.navHeight = wh.height + 'px';
-            this.navWidth = wh.width + 'px';
+            // 为了控制动画效果，添加一层wrap容器
+            var wrapperNode = lib.create('<div class="mp-sidenav-cnt-wrap"></div>');
 
-            //为了控制动画效果，添加一层wrap容器
-            var wrap = document.createElement('div');
-            lib.addClass(wrap, 'ui-nav-cnt-wrap');
+            lib.wrapInner(this.element, wrapperNode);
 
-            this.navNodeWrap = wrap;
 
-            lib.wrap(wrap, this.element.childNodes);
+            this.navNodeWrap = lib.get('.mp-sidenav-cnt-wrap', this.element);
 
-            lib.setStyle(wrap, {
-                'position': 'absolute',
-                'left': '0',
-                'right': '0',
-                'top': '0',
-                'bottom': '0',
-                'margin': 'auto',
-                'display': 'none',
-                'height': this.navHeight,
-                'width': this.navWidth
-            });
+            if (!this.get('showAlways')) {
+                // 获取sideNav的宽高
+                this.navHeight = lib.height(this.element);
+                this.navWidth = lib.width(this.element);
 
-            lib.setStyle(this.element, {
-                'display':'block',
-                'overflow': 'visible',
-                'width': this.navWidth,
-                'height': this.navHeight
-            });
+                lib.css(this.navNodeWrap, {
+                    'position': 'absolute',
+                    'left': '0',
+                    'right': '0',
+                    'top': '0',
+                    'bottom': '0',
+                    'margin': 'auto',
+                    'display': 'none',
+                    'height': this.navHeight,
+                    'width': this.navWidth
+                });
+
+                lib.css(this.element, {
+                    'display': 'block',
+                    'overflow': 'visible',
+                    'width': this.navWidth,
+                    'height': this.navHeight
+                });
+            }
 
             if (this.get('map').enable) {
                 this.navNodes = [];
                 this.panelNodes = [];
-                u.each(this.get('map').rule, function (value, key) {
-                    var domKey = lib.query(key),
-                        domValue = lib.query(value);
+
+                util.each(this.get('map').rule, function (value, key) {
+                    var domKey = lib.get(key, me.element);
+                    var domValue = lib.get(value);
                     if (domKey && domValue) {
                         me.navNodes.push(domKey);
                         me.panelNodes.push(domValue);
                     }
-                })
+                });
             }
 
-            //获取两个节点
-            this.whenElement = lib.query(this.get('when').node);
-            this.topElement = lib.query(this.get('top').node);
-        },
-        _initEvent: function () {
-            this.delayFun = u.throttle(this._scrollCallback, this.get('throttle'));
+            // 获取两个节点
+            this.whenElement = lib.get(this.get('when').node);
+            this.topElement = lib.get(this.get('top').node);
 
-            //绑定作用域到实例
-            lib.on(window, 'scroll', this.delayFun, this);
+        },
+        /**
+         * 初始化事件
+         * @private
+         */
+        _initEvent: function () {
+            var me = this;
+            this.delayFun = util.throttle(this._scrollCallback, this.get('throttle'));
+
+            // 绑定作用域到实例
+            lib.on(this.$window, 'scroll', util.bind(this.delayFun, this));
 
             if (this.topElement) {
                 lib.on(this.topElement, 'click', function (e) {
-                    lib.preventDefault(e);
-                    window.scrollTo(0, 0);
+                    e.preventDefault();
+                    me.$window.scrollTo(0, 0);
                 });
             }
 
             if (this.get('map').enable) {
-                //绑定事件
-                var me = this;
-                u.each(this.navNodes, function (node, i) {
+                var self = this;
+                // 绑定事件
+                util.each(me.navNodes, function (node, i) {
                     lib.on(node, 'click', function (e) {
-
-                        lib.preventDefault(e);
-
-                        var panel = me.panelNodes[i],
-                            top = lib.getPosition(panel).top;
-                        window.scrollTo(0, top);
-
-
-                        //修改对应的样式
+                        e.preventDefault();
+                        var panel = me.panelNodes[i];
+                        var top = lib.getPosition(panel).top;
+                        me.isScrolling = true;
+                        me.$window.scrollTo(0, top + self.get('map').gap);
+                        me.isScrolling = false;
+                        // 变换导航的状态
                         var curNavCls = me.get('map').currentNavClass;
                         var curPanelCls = me.get('map').currentPanelClass;
-                        lib.removeClass(lib.query('.' + curNavCls), curNavCls);
-                        lib.removeClass(lib.query('.' + curPanelCls), curPanelCls);
-
+                        lib.removeClass('.' + curNavCls, curNavCls);
+                        lib.removeClass('.' + curPanelCls, curPanelCls);
                         lib.addClass(this, curNavCls);
                         lib.addClass(panel, curPanelCls);
                     });
                 });
+            }
+
+            //是否支持sticky的功能
+            if (this.get('sticky')) {
+                this._initSticky();
             }
         },
 
@@ -181,59 +251,80 @@ define(function (require) {
          * @private
          */
         _scrollCallback: function () {
+            var me = this;
 
+            // 如果正在滚动中，则不触发滚动回调
+            if (me.isScrolling) {
+                return;
+            }
             var dir = 0;
 
             var scroll = lib.getScrollTop();
 
-            //滚动一定的距离出现sideNav
-            if (this.get('when').type !== 3) {
-                if (this.get('when').type === 1) {
-                    dir = this.get('when').top;
-                }
-
-                // 滚到指定节点出现后显示
-                if (this.get('when').type === 2) {
-                    dir = lib.getPosition(this.whenElement).top - lib.getViewHeight();
-                }
-
-                if (scroll > dir) {
-                    this.show();
-                } else {
-                    this.hide();
-                }
-            }
-
-            //dom节点可能会被修改，所以每次滚动map重新走一遍
-            if (this.get('map').enable) {
-                //讲navNode的点击和panelNodes的点击对应起来
-                //这里有个细节，就是滚动的距离和序列线性的关系，所以获取边界值需要遍历
-                //同事窗口内可能出现多个panel，需要选中最上方的panel,
-                var minDif = 9999,
-                    targetIndex = 0,
-                    maxTop = 0,
-                    maxIndex = 0,
-                    minTop = 9999,
-                    minIndex = 0;
-
-                u.each(this.panelNodes, function (item, i) {
-
-                    var top = lib.getPosition(item).top,
-
-                    //元素距离窗口顶部的距离，如果>=0，元素在窗口的上方
-                        difToWinTop = scroll - top;
-
-                    //Math.abs(difToWinTop)越小，表示距离窗口最近
-                    if (difToWinTop >= 0 && Math.abs(difToWinTop) <= minDif) {
-                        minDif = Math.abs(difToWinTop);
-                        targetIndex = i;
+            // 滚动一定的距离出现sideNav
+            if (!me.get('showAlways')) {
+                if (me.get('when').type !== 3) {
+                    if (me.get('when').type === 1) {
+                        dir = me.get('when').top;
                     }
 
+                    //  滚到指定节点出现后显示
+                    if (me.get('when').type === 2) {
+                        dir = lib.getPosition(me.whenElement).top - lib.height(me.$window);
+                    }
+
+                    if (scroll > dir) {
+                        me.show();
+                    }
+                    else {
+                        me.hide();
+                    }
+                }
+
+            }
+
+            // dom节点可能会被修改，所以每次滚动map重新走一遍
+            if (me.get('map').enable) {
+                // navNode的点击和panelNodes的点击对应起来
+                // 这里有个细节，就是滚动的距离和序列线性的关系，所以获取边界值需要遍历
+                // 窗口内可能出现多个panel，需要选中最上方的panel,
+                var minDif = 9999;
+                var targetIndex = 0;
+                var maxTop = 0;
+                var maxIndex = 0;
+                var minTop = 9999;
+                var minIndex = 0;
+
+                var gap = this.get('map').gap;
+                util.each(me.panelNodes, function (item, i) {
+                    var top = lib.getPosition(item).top;
+                    var eleHeight = lib.height(item);
+
+                    // 元素距离窗口顶部的距离，如果>=0，元素的头部在窗口的上方
+                    // 即滚动的高度 > 元素距离文档顶部的距离
+                    var difToWinTop = scroll - top - gap;
+
+                    // Math.abs(difToWinTop)越小，表示距离窗口最近
+//                    if (difToWinTop >= 0 && difToWinTop <= minDif) {
+                    if (difToWinTop >= 0 && difToWinTop <= minDif) {
+                        minDif = difToWinTop;
+
+                        // 如果不在可视区域内的距离超过超过panel高度的proportion
+                        if (difToWinTop > eleHeight * me.get('map').proportion) {
+                            targetIndex = Math.min(i + 1, me.panelNodes.length - 1);
+                        }
+                        else {
+                            targetIndex = i;
+                        }
+                    }
+
+                    //最下方的节点
                     if (maxTop <= top) {
                         maxTop = top;
                         maxIndex = i;
                     }
 
+                    //最上方的节点
                     if (minTop >= top) {
                         minTop = top;
                         minIndex = i;
@@ -241,22 +332,23 @@ define(function (require) {
 
                 });
 
-                var maxNode = this.panelNodes[maxIndex],
-                    minNode = this.panelNodes[minIndex],
+                var maxNode = me.panelNodes[maxIndex];
+                var minNode = me.panelNodes[minIndex];
 
-                //panel最底部
-                    panelBottom = maxNode.clientHeight + lib.getPosition(maxNode).top,
-                    panelTop = lib.getPosition(minNode).top - lib.getViewHeight();
+                // panel最底部
+                var panelBottom = lib.height(maxNode) + lib.getPosition(maxNode).top;
+                var panelTop = lib.getPosition(minNode).top - lib.height(me.$window);
 
-                //修改对应的样式
-                var curNavCls = this.get('map').currentNavClass;
-                var curPanelCls = this.get('map').currentPanelClass;
-                lib.removeClass(lib.query('.' + curNavCls), curNavCls);
-                lib.removeClass(lib.query('.' + curPanelCls), curPanelCls);
+                // 修改对应的样式
+                var curNavCls = me.get('map').currentNavClass;
+                var curPanelCls = me.get('map').currentPanelClass;
+
+                lib.removeClass('.' + curNavCls, curNavCls);
+                lib.removeClass('.' + curPanelCls, curPanelCls);
 
                 if (scroll < panelBottom && scroll > panelTop) {
-                    lib.addClass(this.navNodes[targetIndex], curNavCls);
-                    lib.addClass(this.panelNodes[targetIndex], curPanelCls);
+                    lib.addClass(me.navNodes[targetIndex], curNavCls);
+                    lib.addClass(me.panelNodes[targetIndex], curPanelCls);
                 }
 
             }
@@ -288,11 +380,28 @@ define(function (require) {
 
             var me = this;
             if (this.get('when').type === 3) {
-                u.delay(function () {
+                util.delay(function () {
                     me.show();
                 }, this.get('when').delay);
             }
 
+        },
+
+        /**
+         * 支持导航栏悬浮固定
+         * @private
+         */
+        _initSticky: function () {
+            var scrollTop = lib.getPosition(this.element).top;
+            var self = this;
+            this.stickyFun = util.throttle(function () {
+                var option = lib.getScrollTop() > scrollTop
+                    ? 'addClass' : 'removeClass';
+                lib[option](self.element, 'mp-sticky');
+
+            }, self.get('throttle'));
+
+            lib.on(this.$window, 'scroll', this.stickyFun);
         },
         /**
          * 出现
@@ -308,10 +417,14 @@ define(function (require) {
             this.anim.hide(this);
         },
 
+        /**
+         * 销毁，解除window的滚动监听函数
+         */
         dispose: function () {
-            lib.un(window, 'scroll', this.delayFun, true);
+            lib.off(this.$window, 'scroll', this.delayFun);
+            lib.off(this.$window, 'scroll', this.stickyFun);
             this.options = this.anim = null;
-            return SideNav.superClass.dispose.call(this);
+            SideNav.superClass.dispose.call(this);
         }
     });
 
