@@ -1,11 +1,7 @@
 {
     "name": "winne",
-    "version": "0.0.1",
+    "version": "0.5.0",
     "description": "a simple ui library",
-    "main": "index.js",
-    "scripts": {
-        "test": "node test"
-    },
     "repository": {
         "type": "git",
         "url": "https://github.com/ishenli/winnie.git"
