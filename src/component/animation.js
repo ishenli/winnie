@@ -11,7 +11,7 @@ define(function (require) {
     var Promise = require('../lib/promise');
     var transition = require('./animation/transition');
 
-    var defaultConfig = {
+    var DEFAULT_CONFIG = {
         duration: 1,
         easing: 'liner'
     };
@@ -87,7 +87,7 @@ define(function (require) {
         }
 
         // extend默认配置
-        config = util.extend(defaultConfig, config);
+        config = util.extend(DEFAULT_CONFIG, config);
 
         this.config = config;
 
@@ -185,9 +185,13 @@ define(function (require) {
             return this;
         },
 
+        ease:function(value) {
+            this.config.easing = TIMING_FUNCTION[value] || value;
+            return this;
+        },
         reset: function () {
             this._action = {};
-            this.config = util.extend({}, this._defaultOptions);
+            this.config = util.extend({}, DEFAULT_CONFIG);
             return this;
         },
         finish:function(callback) {
@@ -240,10 +244,13 @@ define(function (require) {
     /**
      *
      * @param {HTMLElement} element
+     * @param {number=} duration
+     * @param {string} easing
+     * @param {Function} complete
      * @return {Animation}
      */
-    Animation.animation = function (element) {
-        return new Animation(element);
+    Animation.animation = function (element,duration, easing, complete) {
+        return new Animation(element,duration, easing, complete);
     };
 
 

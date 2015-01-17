@@ -7,16 +7,14 @@ define(function (require) {
     var dom = require('../../lib/dom');
     var feature = require('../../lib/feature');
     var Promise = require('../../lib/promise');
+
     var exports = {};
-
-    var detectEle = document.createElement('div');
-
 
     var transitionEndEvents = [
         'transitionend', 'webkitTransitionEnd',
-        'oTransitionEnd', 'MSTransitionEnd',
-        'otransitionend' // Opera某些犯2的版本...
+        'oTransitionEnd', 'MSTransitionEnd'
     ];
+
     /**
      * 设置transition
      *
@@ -25,7 +23,7 @@ define(function (require) {
      * @param {Object} properties 要改变的属性
      * @param {Object} config 属性值
      * @param {number=} config.duration 持续时间 单位秒
-     * @param {string=} config.ease 缓动效果
+     * @param {string=} config.easing 缓动效果
      * @param {number=} config.delay 延时 单位秒
      * @return {Promise}
      */
@@ -36,7 +34,7 @@ define(function (require) {
 
         config = config || {};
         config.duration = config.duration || 0;
-        config.ease = config.ease || 0;
+        config.easing = config.easing || 'ease';
         config.delay = config.delay || 0;
 
         var propertyNames = [];
@@ -79,7 +77,7 @@ define(function (require) {
 
                 dom.setStyle(el, 'transition-property', propertyNames.join(','));
                 dom.setStyle(el, 'transition-duration', config.duration + 's');
-                dom.setStyle(el, 'transition-timing-function', config.ease);
+                dom.setStyle(el, 'transition-timing-function', config.easing);
                 dom.setStyle(el, 'transition-delay', config.delay + 's');
             }
             else {
