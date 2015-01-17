@@ -38,7 +38,7 @@ define(
         cssProps['float'] = 'cssFloat';
 
         /**
-         * css,习惯jQuery的api
+         * css,类似jQuery的api
          * @param {HTMLElement[]|String|HTMLElement} selector
          * @param {Object|string} styles
          * @param {string=} value
@@ -48,7 +48,7 @@ define(
                 exports.setStyle(selector, styles, value)
             }
             else {
-                exports.getStyle(selector, styles);
+                return exports.getStyle(selector, styles);
             }
         };
 

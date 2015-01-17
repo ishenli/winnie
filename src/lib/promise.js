@@ -69,7 +69,7 @@ define(
                 me._rejects.push(createCallback(reject, onRejected, resolve, reject));
             });
 
-            exec(this);
+            process(this);
 
             return promise;
         };
@@ -100,7 +100,7 @@ define(
             this.status = STATUS.FULFILLED;
             this.value = value;
 
-            this._resolves.length && exec(this);
+            this._resolves.length && process(this);
 
             return this;
         };
@@ -111,7 +111,7 @@ define(
             this.status = STATUS.REJECTED;
             this.reason = reason;
 
-            this._rejects.length && exec(this);
+            this._rejects.length && process(this);
 
             return this;
         };
@@ -204,6 +204,7 @@ define(
          * @param {*} value
          */
         Promise.cast = function(value) {
+
             // 已经是promise对象了
             if (value && typeof value === 'object' && value.constructor === this) {
                 return value;
@@ -237,7 +238,7 @@ define(
             })
         };
 
-        function exec(instance) {
+        function process(instance) {
 
             var status = instance.status;
 
