@@ -137,12 +137,23 @@ define(function (require) {
     };
 
 
+
     Animation.prototype = {
         constructor: Animation,
 
-        stop: function () {
 
+        /**
+         * 停止动画
+         * @return {Animation}
+         */
+        stop: function () {
+            transition.removeStyle(this.node);
+            return this;
         },
+        /**
+         * 运行动画
+         * @return {Animation}
+         */
         run: function () {
             var el = this.node;
             var item;

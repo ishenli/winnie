@@ -2,6 +2,7 @@
  * @file ui控件基类，封装基本的方法和属性,api 参考 http://aralejs.org/widget/
  * @author shenli
  */
+
 define(function (require) {
     var lib = require('../lib');
     var util = require('../lib/util');
@@ -189,7 +190,7 @@ define(function (require) {
         },
         /**
          * 绑定代理事件
-         * @param {?HTMLElement} element 委托的element,默认为组件的element元素
+         * @param {HTMLElement=} element 委托的element,默认为组件的element元素
          * @param {Object} events
          * @param {string} events.key  事件名称
          * @param {Function} events.value 函数

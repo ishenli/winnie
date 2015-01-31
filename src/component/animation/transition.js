@@ -15,6 +15,67 @@ define(function (require) {
         'oTransitionEnd', 'MSTransitionEnd'
     ];
 
+    var EVENT_INDEX = 'transition-event';
+    var eventList = [];
+
+    /**
+     * 用于手动触发事件
+     * @param {HTMLElement} el
+     */
+    function fireEndEvent(el) {
+        var index = dom.data(el, EVENT_INDEX);
+        if(!index) {
+            return;
+        }
+
+        index = parseInt(index, 10);
+        var items = eventList[index] || [];
+
+        items.forEach(function (fn) {
+            fn.call(el, true);
+        });
+    }
+
+    /**
+     * 保存事件
+     * @param {HTMLElement} el
+     * @param {Function} handler
+     */
+    function onEndEvent(el,handler) {
+        var items;
+        var index = dom.data(el, EVENT_INDEX);
+        if (index) {
+            index = parseInt(index, 10);
+            items = eventList[index];
+        }
+        else {
+            index = eventList.length;
+            dom.data(el, EVENT_INDEX, index);
+        }
+        items = items || [];
+        items.push(handler);
+        eventList[index] = items;
+    }
+    /**
+     * 删除手动触发事件
+     * @param {HTMLElement} el
+     */
+    function unEndEvent(el,handler) {
+        var index = dom.data(el, EVENT_INDEX);
+        if (!index) {
+            return;
+        }
+
+        index = parseInt(index, 10);
+        var items = eventList[index] || [];
+
+        items.some(function (item, index, items) {
+            return item === handler
+                && items.splice(index, 1);
+        });
+    }
+
+
     /**
      * 设置transition
      *
@@ -90,16 +151,31 @@ define(function (require) {
     };
 
 
+    /**
+     * 停止动画
+     * @param {HTMLElement} el 元素节点
+     */
+    exports.removeStyle = function(el) {
+        // 将transition-property设为none，不会触发transitionend事件，需要手动触发下
+        dom.setStyle(el, 'transition-property', 'none');
+
+        fireEndEvent(el);
+    };
+
     exports.onTransitionEnd = function (el, handler, capture) {
         transitionEndEvents.forEach(function (event) {
             el.addEventListener(event, handler, capture || false);
         });
+
+        onEndEvent(el, handler);
     };
 
     exports.unTransitionEnd = function (el, handler, capture) {
         transitionEndEvents.forEach(function (event) {
             el.removeEventListener(event, handler, capture || false);
         });
+
+        unEndEvent(el, handler);
     };
 
     exports.oneTransitionEnd = function (el, callback, capture) {
