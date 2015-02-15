@@ -78,6 +78,25 @@ define(function (require) {
          */
         ucFirst:function(str) {
             return str.charAt(0).toUpperCase() + str.substring(1);
+        },
+
+        /**
+         * 将文本转为json对象
+         * @param {string} data
+         * @return {object}
+         */
+        parseJSON:function(data) {
+            if (!data) {
+                return;
+            }
+
+            if (window.JSON && typeof JSON.parse === 'function') {
+                return JSON.parse(data);
+            }
+            else {
+                return new Function('return (' + data + ')')();
+
+            }
         }
     })
 });

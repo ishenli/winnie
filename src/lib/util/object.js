@@ -129,6 +129,16 @@ define(function (require) {
 
             return target;
         },
+        merge: function (varArgs) {
+            varArgs = util.makeArray(arguments);
+            var o = {},
+                i,
+                l = varArgs.length;
+            for (i = 0; i < l; i++) {
+                util.mix(o, varArgs[i]);
+            }
+            return o;
+        },
         /**
          * 获取对象类型
          *
