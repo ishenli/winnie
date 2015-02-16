@@ -49,6 +49,8 @@ define(function (require) {
      */
     exports.normalizeParams = function (type, selector, fn, data, context) {
 
+        var options = {};
+
         if (util.isFunction(fn) && util.isString(selector)) {
             options = {
                 selector: selector,

@@ -17,10 +17,10 @@ define(function (require) {
          * indexOf
          * @method
          * @member util
-         * @param {number} item individual item to be searched
-         * @param {Array} arr the array of items where item will be search
-         * @param {number=} from  where to start the search
-         * @return {number} item's index in array
+         * @param {object} item
+         * @param {Array} arr 数组
+         * @param {number=} from 开始位置
+         * @return {number}
          */
         indexOf: indexOf
             ? function (item, arr, from) {
@@ -131,9 +131,8 @@ define(function (require) {
                     }
                 });
                 return ret;
-        }
+            }
     });
 
     return util;
-})
-;
+});
