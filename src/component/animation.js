@@ -100,7 +100,7 @@ define(function (require) {
         this.to = to;
 
         this._action = {};
-        this._promise = Promise.resolve();
+        this._promise = Promise.resolve(node);
 
     }
 

@@ -3,6 +3,7 @@
  * @author ishenli
  * from https://github.com/aralejs/base/edit/master/src/aspect.js
  */
+
 define(function () {
 
     var exports = {};
@@ -12,14 +13,11 @@ define(function () {
     };
 
 
-// 在指定方法执行后，再执行 callback
+    // 在指定方法执行后，再执行 callback
     exports.after = function (methodName, callback, context) {
         return weave.call(this, 'after', methodName, callback, context);
     };
 
-
-// Helpers
-// -------
 
     var eventSplitter = /\s+/;
 

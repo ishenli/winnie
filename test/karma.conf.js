@@ -9,7 +9,7 @@ module.exports = function (config) {
 
 
         // frameworks to use
-        frameworks: ['jasmine', 'requirejs'],
+        frameworks: ['jasmine-ajax', 'jasmine', 'requirejs'],
 
 
         // list of files / patterns to load in the browser
@@ -19,11 +19,9 @@ module.exports = function (config) {
             {pattern: 'src/**/**/*.js', included: false},
             {pattern: 'test/**/**/*.html', included: false},
             {pattern: 'test/**/*Helper.js', included: false},
-            //{pattern: 'test/**/cookieSpec.js', included: false},
+            //{pattern: 'test/**/featureSpec.js', included: false},
             //{pattern: 'test/**/dom/*Spec.js', included: false},
-            //{pattern: 'test/**/event/delegateSpec.js', included: false},
-            {pattern: 'test/**/widget/positionSpec.js', included: false},
-            {pattern: 'dep/bean/bean.js', included: false},
+            {pattern: 'test/**/io/**', included: false},
             {pattern: 'dep/async/lib/async.js', included: false},
             //{pattern: 'test/**/widget/*Spec.js', included: false},
 //            {pattern: 'test/**/widgetSpec.js', included: false},
@@ -103,7 +101,7 @@ module.exports = function (config) {
         singleRun: !true,
 
         plugins: [
-            'karma-jasmine', 'karma-chrome-launcher', 'karma-firefox-launcher', /*'karma-safari-launcher', */'karma-phantomjs-launcher', 'karma-less-preprocessor', 'karma-requirejs', 'karma-coverage'
+            'karma-jasmine','karma-jasmine-ajax', 'karma-chrome-launcher', 'karma-firefox-launcher', /*'karma-safari-launcher', */'karma-phantomjs-launcher', 'karma-requirejs', 'karma-coverage'
         ]
     });
 };
