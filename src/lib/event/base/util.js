@@ -31,7 +31,8 @@ define(function (require) {
             // 通过同一个正则 /.*\.a.*\.b(?:\.|$)/ 匹配
             ns = ns.split('.').sort();
             ret.push(ns.join('.'));
-        } else {
+        }
+        else {
             ret.push('');
         }
         return ret;
@@ -51,7 +52,12 @@ define(function (require) {
 
         var options = {};
 
-        if (util.isFunction(fn) && util.isString(selector)) {
+        /**
+         * Event.on(n, '.p', 'mouseenter', function(){
+         *      alert('xx');
+         * });
+         */
+        if (util.isString(selector)) {
             options = {
                 selector: selector,
                 fn: fn,
@@ -59,6 +65,11 @@ define(function (require) {
                 data: data
             };
         }
+        /**
+         * Event.on(n, function(){
+         *      alert('xx');
+         * });
+         */
         else if (util.isFunction(selector)) {
             options = {
                 fn: selector,
@@ -66,12 +77,32 @@ define(function (require) {
                 context: data
             };
         }
-        else  if (util.isObject(fn)){
+        /**
+         * Event.on(n, 'mouseenter', 'p', {
+         *      fn: function (e) {
+         *          ret = 1;
+         *      },
+         *      once: 1
+         *   });
+         */
+        else if (util.isObject(fn)) {
             options = util.merge({
-                selector:selector,
-                data:fn
+                selector: selector,
+                data: fn
             })
         }
+        /**
+         * Event.on(n, 'mouseenter', {
+         *      fn: function (e) {
+         *          ret = 1;
+         *      },
+         *      once: 1
+         *   });
+         */
+        else if (util.isObject(selector)) {
+            options = util.merge(selector)
+        }
+
 
         var typeNamespace = exports.getTypeNamespace(type);
 
@@ -125,7 +156,7 @@ define(function (require) {
      * @param {string} namespace
      * @returns {RegExp}
      */
-    exports.getNamespaceReg = function(namespace) {
+    exports.getNamespaceReg = function (namespace) {
         // 分组捕获
         // http://msdn.microsoft.com/zh-cn/library/az24scfc(v=vs.110).aspx
         return new RegExp(namespace.split('.').join('.*\\.') + '(?:\\.|$)');
@@ -151,5 +182,19 @@ define(function (require) {
     }
 
     exports.splitAndRun = splitAndRun;
+
+
+    exports.fillGroupsForEvent = function (type, eventData) {
+        var typedGroups = exports.getTypeNamespace(type),
+            _ns = typedGroups[1];
+
+        if (_ns) {
+            _ns = exports.getNamespaceReg(_ns);
+            eventData._ns = _ns;
+        }
+
+        eventData.type = typedGroups[0];
+    };
+
     return exports;
 });

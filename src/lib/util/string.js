@@ -13,7 +13,7 @@ define(function (require) {
             return str == null ? '' : trim.call(str);
         }
             : function (str) {
-            return str == null ? '' : (str + '').replace(RE_TRIM,'');
+            return str == null ? '' : (str + '').replace(RE_TRIM, '');
         },
         /**
          * 将字符串转换成`camelCase`格式
@@ -69,14 +69,14 @@ define(function (require) {
          * @param {string} d
          * @returns {Array|*}
          */
-        strToArray: function(str, d) {
+        strToArray: function (str, d) {
             return str.split(d || ' ');
         },
         /**
          * 首字母大写
          * @param {string} str
          */
-        ucFirst:function(str) {
+        ucFirst: function (str) {
             return str.charAt(0).toUpperCase() + str.substring(1);
         },
 
@@ -85,7 +85,7 @@ define(function (require) {
          * @param {string} data
          * @return {object}
          */
-        parseJSON:function(data) {
+        parseJSON: function (data) {
             if (!data) {
                 return;
             }
@@ -97,6 +97,10 @@ define(function (require) {
                 return new Function('return (' + data + ')')();
 
             }
+        },
+
+        stripTags: function (target) {
+            return String(target || '').replace(/<[^>]+>/g, '');
         }
-    })
+    });
 });

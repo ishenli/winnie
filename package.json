@@ -1,6 +1,6 @@
 {
     "name": "winnie",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "description": "a simple ui library",
     "repository": {
         "type": "git",
@@ -9,6 +9,7 @@
     "keywords": [
         "javascript"
     ],
+    "main": "main",
     "author": "ishenli",
     "contributors": [
         {

@@ -1,6 +1,6 @@
 {
     "name": "winnie",
-    "version": "0.0.1",
+    "version": "0.6.0",
     "license": "MIT",
     "private": true,
     "ignore": [
@@ -12,6 +12,7 @@
     ],
     "devDependencies": {
         "lacus" : "https://github.com/ishenli/lacus.git",
-        "bean" : "https://github.com/fat/bean.git"
+        "bean" : "https://github.com/fat/bean.git",
+        "async":"https://github.com/caolan/async"
     }
 }

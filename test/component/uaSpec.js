@@ -15,8 +15,8 @@ define(function(require) {
                 //expect(ua.webkit).toEqual(537.36);
                 expect(ua.browser.name).toEqual('chrome');
                 expect(window.detector.browser.name).toEqual('chrome');
-                expect(ua.chrome).toEqual(38);
-                expect(window.detector.chrome).toEqual(38);
+                expect(ua.chrome).toBeGreaterThan(38);
+                expect(window.detector.chrome).toBeGreaterThan(38);
             });
 
             /*it('recoginize xiaomi', function () {

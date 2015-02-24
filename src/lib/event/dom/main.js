@@ -196,32 +196,58 @@ define(function (require) {
     }
 
     /**
-     *
+     * 触发事件
      * @param {HTMLElement|HTMLElement[]|String} selector
-     * @param types
-     * @param data
+     * @param {string} eventType
+     * @param {object} eventData
+     * @param {Function} eventData
      */
-    function fire(selector, types, data) {
+    function fire(selector, eventType, eventData, onlyHandler) {
         var finalRet;
 
-        eventUtil.splitAndRun(types, function (type) {
+        if (eventType.isEventObject) {
+            eventData = eventType;
+            eventType = eventType.type;
+        }
+
+        eventData = eventData || {};
+
+
+        eventUtil.splitAndRun(eventType, function (eventType) {
             var targets;
             var target;
             var domEventCache;
             var ret;
             targets = dom.query(selector);
+
+            // 分组事件
+            eventUtil.fillGroupsForEvent(eventType, eventData);
+
+            // 如果是mouseenter，存储的时候是mouseover，需要特别处理一下
+            eventType = eventData.type;
+            var s = special[eventType];
+
+            var originalType = eventType;
+
+            if (s && s.typeFix) {
+                // mousemove
+                originalType = s.typeFix;
+            }
+
             for (var len = targets.length - 1; len >= 0 ; len--) {
                 target = targets[len];
-                domEventCache = DomEventCache.getDomEventCache(targets, type);
-                if (!domEventCache) {
+                domEventCache = DomEventCache.getDomEventCache(targets, originalType);
+
+                // 没有指定监听函数
+                if (!onlyHandler && !domEventCache) {
                     domEventCache = new DomEventCache({
-                        type:type,
+                        type:originalType,
                         currentTarget:target
                     });
                 }
 
                 if (domEventCache) {
-                    ret = domEventCache.fire(data);
+                    ret = domEventCache.fire(eventData, onlyHandler);
                     if (finalRet !== false && ret !== undefined) {
                         finalRet = ret;
                     }

@@ -4,6 +4,7 @@
  */
 
 define(function (require) {
+
     var ObserverCache = require('../base/ObserverCache');
     var DomEventUtils = require('./util');
     var BaseUtil = require('../base/util');
@@ -95,13 +96,16 @@ define(function (require) {
                     observerOptions = observerItem.options;
                     observerContext = observerOptions.context || currentTarget;
 
-                    // 执行删除的对象跟observer中的不同，则不删除
+
                     if (context !== observerContext
                         || (fn && fn !== observerOptions.fn)
+                            // 指定了删除的某些组，而该 observer 不属于这些组，保留，否则删除
                         || (namespaceReg && !observerOptions.namespace.match(namespaceReg))
-                        || (isDelegate &&
-                            (selector && selector!== observerOptions.selector)
-                            || (!selector && !observerOptions.selector)
+                        || (isDelegate
+                                && (
+                                (selector && selector !== observerOptions.selector)
+                                || (!selector && !observerOptions.selector)
+                            )
                         )
                     ) {
                         newObservers[j++] = observerItem;
@@ -146,7 +150,7 @@ define(function (require) {
             // 处理delegate
             if (delegateCount && target.nodeType) {
                 while (target !== currentTarget) {
-                    if (target.disabled !== true  || type !== 'click') {
+                    if (target.disabled !== true || type !== 'click') {
                         currentTargetObservers = [];
                         var selector;
                         var matchCache = {};
@@ -169,7 +173,7 @@ define(function (require) {
 
                         if (currentTargetObservers.length) {
                             allObservers.push({
-                                isDelegate:true,
+                                isDelegate: true,
                                 currentTarget: target,
                                 currentTargetObservers: currentTargetObservers
                             });
@@ -219,16 +223,15 @@ define(function (require) {
         /**
          * fire要处理冒泡的情况
          * @param event
-         * @param handelr
+         * @param {Function} handler
          */
-        fire: function (event,handelr) {
+        fire: function (event, handler) {
             event = event || {};
             var me = this;
             var type = me.type;
             var domEventCache;
             var win = window;
             var currentTarget = me.currentTarget;
-            var bubbles = true;
             var ret;
             var finalResult;
             var eventData;
@@ -236,16 +239,26 @@ define(function (require) {
             event.currentTarget = currentTarget;
             event.target = event.target || currentTarget;
 
+            var specialEvent = special[type] || {};
+            var bubbles = specialEvent.bubbles !== false;
+
             var current = currentTarget;
 
             var eventPath = [];
             var bubbleIndex = 0;
 
+            // special fire for click/focus/blur
+            if (specialEvent.fire && specialEvent.fire.call(currentTarget, handler) === false) {
+                return;
+            }
+
             if (!event.isEventObject) {
                 eventData = event;
+
                 event = new DomEventObject({
-                    'type': type
+                    type: type
                 });
+
                 util.mix(event, eventData);
             }
 
@@ -254,7 +267,7 @@ define(function (require) {
                 eventPath.push(current);
                 current = current.parentNode || current.ownerDocument || (current === win.document) && win;
 
-            } while (!handelr && current && bubbles);
+            } while (!handler && current && bubbles);
 
 
             current = eventPath[bubbleIndex];
@@ -282,7 +295,7 @@ define(function (require) {
 
 
             // 还是要调用原生的事件
-            if (!handelr && !event.isDefaultPrevented()) {
+            if (!handler && !event.isDefaultPrevented()) {
 
                 try {
                     if (currentTarget[type] && !util.isWindow(currentTarget)) {

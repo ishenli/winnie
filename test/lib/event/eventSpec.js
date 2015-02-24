@@ -81,9 +81,7 @@ define(function (require) {
                 //$(f).on('click', foo);
                 //$(f).off('click', foo);
                 DomEvent.on(f, 'click', foo);
-                //
                 DomEvent.on(f, 'click', foo);
-                //
                 DomEvent.off(f, 'click', foo);
 
                 // click f

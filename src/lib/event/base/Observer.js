@@ -48,7 +48,7 @@ define(function (require) {
         simpleNotify: function (event, observerCache) {
             var me = this;
             var options = me.options;
-            var ret = options.fn.call(options.context || options.delegateContext || observerCache.currentTarget, event, options.data);
+            var ret = options.fn.call(options.context || observerCache.delegateContext || observerCache.currentTarget, event, options.data);
             if (options.once) {
                 observerCache.removeObserver(me);
             }
@@ -73,12 +73,22 @@ define(function (require) {
 
         /**
          * notify
-         * @param {Event} event
+         * @param {Event} event 是一个事件对象，包含了namespace，currentTarget等一些信息
          * @param {observerCache} observerCache
          * @return {*} ret
          */
         notify: function (event, observerCache) {
             var me = this;
+            var options = this.options;
+
+            // fire时，如果执行namespace，则进行处理, 由util.fillGroupsForEvent方法设定的，
+            // 在fire时调用fillGroupsForEvent
+           var  _ns = event._ns;
+
+            // handler's group does not match specified groups (at fire step)
+            if (_ns && (!options.namespace || !(options.namespace.match(_ns)))) {
+                return undefined;
+            }
 
             return me.notifyInternal(event, observerCache);
         }

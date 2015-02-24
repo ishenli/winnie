@@ -250,7 +250,7 @@ define(function (require) {
                 expect(ret).toEqual([1]);
             });
 
-            it("should works with multiple events", function () {
+            it("should works with multiple events", function (done) {
                 var g = t.find("#c-event-group"),
                     ret = [];
                 Event.on(t[0],'click', function () {
@@ -265,6 +265,7 @@ define(function (require) {
                 Event.fire(g[0],'click');
                 setTimeout(function () {
                     expect(ret).toEqual([3]);
+                    done();
                 },10);
             });
 
@@ -330,7 +331,9 @@ define(function (require) {
                 });
 
                 Event.off(g[0],"click.one");
+
                 Event.fire(g[0],'click');
+
                 expect(ret).toEqual([2, 3]);
             });
         });

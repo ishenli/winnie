@@ -1,8 +1,8 @@
 /**
- * @file file
+ * @file cookie
  * @author zhangkai (zhangking520@gmail.com)
  */
-define(function (require) {
+define(function () {
     var doc = document,
         current_domain = doc.domain,
         top_domain = current_domain.match(/\w+\.\w+$/);

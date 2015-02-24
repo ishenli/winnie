@@ -7,13 +7,13 @@ define(function (require) {
     var util = require('./lib/util');
 
 
-    var lib = {};
+    var exports = {};
 
     util.extend(
-        lib,
+        exports,
         require('./lib/dom'),
         require('./lib/event')
     );
 
-    return lib;
+    return exports;
 });

@@ -4,7 +4,8 @@
  */
 define(function(require) {
 
-    var lib = require('lib');
+    var lang = require('lib/lang');
+    var util = require('lib/util');
 
     describe('deepClone', function () {
         it('简单的对象克隆',function (){
@@ -15,30 +16,12 @@ define(function(require) {
                     company: 'baidu'
                 }
             };
-            var cloneObj = lib.deepClone(testObj);
+            var cloneObj = lang.deepClone(testObj);
             cloneObj.name = 'ishenli';
             cloneObj.work.company = 'taobao';
             expect(cloneObj.age[0]).toEqual(11);
             expect(cloneObj.work.company).toEqual('taobao');
             expect(testObj.work.company).toEqual('baidu');
-        });
-
-    });
-
-    describe('isEmpty', function () {
-        it('是否为空',function (){
-            var tests = ['', undefined, null];
-
-            tests.forEach(function(val){
-                expect(lib.isEmpty(val)).toBeTruthy();
-            });
-
-            var wrong = ['hello','undefined'];
-
-            wrong.forEach(function(val){
-                expect(lib.isEmpty(val)).toBeFalsy();
-            });
-
         });
 
     });

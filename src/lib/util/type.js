@@ -103,6 +103,7 @@ define(function (require) {
     });
 
     var types = 'Boolean Number String Function Date RegExp Object Array'.split(' ');
+
     for (var i = 0; i < types.length; i++) {
         /*jshint loopfunc:true*/
         (function (name, lc) {
@@ -116,7 +117,8 @@ define(function (require) {
         })(types[i], i);
     }
 
-    util.isArray = Array.prototype.isArray || util.isArray;
+
+    util.isArray = Array.isArray || util.isArray;
 
     return util;
 });

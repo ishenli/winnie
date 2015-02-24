@@ -138,15 +138,6 @@ define(function (require) {
                 util.mix(o, varArgs[i]);
             }
             return o;
-        },
-        /**
-         * 获取对象类型
-         *
-         * @param {Object} target 目标对象
-         * @return string
-         */
-        type: function (target) {
-            return toString.call(target).replace(/\[object (\w+)\]/, '$1').toLowerCase();
         }
     });
 

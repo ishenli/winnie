@@ -5,6 +5,7 @@
 define(function (require) {
 
     var util = require('../util');
+    var dom = require('../dom');
 
     var lib = {};
 

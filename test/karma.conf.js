@@ -14,21 +14,12 @@ module.exports = function (config) {
 
         // list of files / patterns to load in the browser
         files: [
-//      'src/css/*.less',
             {pattern: 'src/**/*.js', included: false},
             {pattern: 'src/**/**/*.js', included: false},
             {pattern: 'test/**/**/*.html', included: false},
-            {pattern: 'test/**/*Helper.js', included: false},
-            //{pattern: 'test/**/featureSpec.js', included: false},
-            //{pattern: 'test/**/dom/*Spec.js', included: false},
-            {pattern: 'test/**/io/**', included: false},
+            {pattern: 'test/component/**', included: false},
+            {pattern: 'test/lib/**', included: false},
             {pattern: 'dep/async/lib/async.js', included: false},
-            //{pattern: 'test/**/widget/*Spec.js', included: false},
-//            {pattern: 'test/**/widgetSpec.js', included: false},
-//      {pattern: 'test/**/stringSpec.js', included: false},
-//      {pattern: 'test/**/dialogSpec.js', included: false},
-//      {pattern: 'test/**/stringSpec.js', included: false},
-//      {pattern: 'test/**/validatorSpec.js', included: false},
             'test/main.js',
             'node_modules/simulate-dom-event/index.js'
         ],

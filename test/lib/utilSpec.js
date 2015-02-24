@@ -2,7 +2,7 @@
  * @file util
  * @author ishenli （meshenli@gmail.com）
  */
-define(function(require) {
+define(function (require) {
 
     var util = require('lib/util');
 
@@ -116,7 +116,7 @@ define(function(require) {
         it('util.isEmptyObject', function () {
             expect(util.isEmptyObject({})).toEqual(true);
 
-            expect(util.isEmptyObject({ a: 1 })).toEqual(false);
+            expect(util.isEmptyObject({a: 1})).toEqual(false);
             expect(util.isEmptyObject([])).toEqual(true);
 
             // Failed in Safari/Opera
@@ -176,5 +176,16 @@ define(function(require) {
             });
         });
 
+
+        it('camelCase', function () {
+
+            var test = 'hello-world-boy',
+                css = 'margin-right';
+
+            expect(util.camelCase(test)).toBe('helloWorldBoy');
+
+            expect(util.camelCase(css)).toBe('marginRight');
+
+        });
     });
 });

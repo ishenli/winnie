@@ -6,7 +6,6 @@ define(function (require) {
 
     var Dom = require('lib/dom');
     var Event = require('lib/event/dom/main');
-    //var Event = require('bean');
     var $ = require('jquery');
     var async = require('async');
     var tpl = '';
@@ -233,12 +232,12 @@ define(function (require) {
                 runs(function () {
                     ret = [];
                     Event.on(d, 'click', 'button', t);
-                    Event.off(d, 'click'); // 移除所有除去委托的事件
+                    Event.off(d, 'click'); // 移除所有事件
                     simulateEvent(s, 'click');
                 }),
                 waits(10),
                 runs(function () {
-                    expect(ret).toEqual([9]);
+                    expect(ret).toEqual([]);
                     Dom.remove(d);
                 })
             ], done);
