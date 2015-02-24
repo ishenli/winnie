@@ -36,35 +36,15 @@
                 'main': 'main'
             },
             {
-                'name': 'promise',
-                'location': '../dep/promise/1.0.0/src',
-                'main': 'main'
-            },
-            {
-                'name': 'saber-dom',
-                'location': '../dep/saber-dom/1.0.0/src',
-                'main': 'main'
-            },
-            {
-                'name': 'saber-lang',
-                'location': '../dep/saber-lang/1.0.0/src',
-                'main': 'main'
-            },
-            {
-                'name': 'saber-promise',
-                'location': '../dep/saber-promise/1.0.0/src',
-                'main': 'promise'
-            },
-            {
-                'name': 'saber-run',
-                'location': '../dep/saber-run/1.0.0/src',
-                'main': 'main'
+                'name': 'winnie',
+                'location': '../src',
+                'main': 'lib'
             }
         ],
         'paths': {}
     });
 
-    require(['component/animation','lib'], function (anim,lib) {
+    require(['winnie/component/animation','winnie'], function (anim,lib) {
 
         var ele = document.getElementById('test');
 
