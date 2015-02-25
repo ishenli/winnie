@@ -49,11 +49,6 @@
         "loaderAutoConfig": "js,htm,html,tpl,vm,phtml",
         "loaderUrl": "http://s1.bdstatic.com/r/www/cache/ecom/esl/1-8-2/esl.js",
         "dependencies": {
-            "saber-dom": "~1.0.0",
-            "saber-lang": "~1.0.0",
-            "saber-promise": "~1.0.0",
-            "saber-run": "~1.0.0",
-            "winnie": "~0.6.0",
             "etpl": "~3.0.0"
         }
     }
